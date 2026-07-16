@@ -292,16 +292,20 @@ The plugin provides flexible email automation, customizable templates, quality c
 
 This plugin complies with WordPress.org Plugin Guideline 4 (Code must be mostly human readable): https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#4-code-must-be-mostly-human-readable
 
-The JavaScript and CSS files under `admin-ui/dist/` (including `bundle.js`, `app.bundle.js`, `widgets.bundle.js`, `vendors.bundle.js`, and other `*.bundle.js` files) are generated/compressed production builds.
+The JavaScript and CSS files under `admin-ui/dist/` (including `bundle.js`, `app.bundle.js`, `widgets.bundle.js`, `vendors.bundle.js`, and other `*.bundle.js` files) are generated/compressed production builds used at runtime.
 
-The non-compiled, human-readable source for those assets is included in this plugin package (not only linked externally):
+The compiled, human-readable source code for those assets is publicly available at:
+
+https://github.com/Nirmalys/hyoka
+
+In that repository you will find:
 
 * Application source: `admin-ui/src/`
 * Main entry point: `admin-ui/src/index.js`
 * App root: `admin-ui/src/App.js`
 * Styles source: `admin-ui/src/hyoka.css`
-* Build tooling included with the plugin: `admin-ui/package.json`, `admin-ui/package-lock.json`, `admin-ui/webpack.config.js`, `admin-ui/postcss.config.js`
-* Additional build notes: `admin-ui/README.md`
+* Build tooling: `admin-ui/package.json`, `admin-ui/package-lock.json`, `admin-ui/webpack.config.js`, `admin-ui/postcss.config.js`
+* Build notes: `admin-ui/README.md`
 
 Third-party developer libraries bundled into the compressed vendor assets are declared in `admin-ui/package.json`. Their publicly maintained source repositories are:
 
@@ -315,41 +319,31 @@ Third-party developer libraries bundled into the compressed vendor assets are de
 
 React and ReactDOM are externalized at build time and loaded from WordPress core (`wp-element` / registered React scripts), not shipped as obfuscated copies of those libraries inside the plugin bundles.
 
-How to rebuild the generated/compressed assets from source:
-
-1. Install Node.js 18 or newer and npm
-2. `cd admin-ui`
-3. `npm install`
-4. `npm run build`
-
-The build writes production files to `admin-ui/dist/`. Do not include `admin-ui/node_modules/` when packaging the plugin for WordPress.org.
-
 == Development ==
 
-Hyoka ships both human-readable admin UI source and the compiled assets used at runtime.
+The full Hyoka source code and build instructions are publicly available at:
 
-* Human-readable source: `/admin-ui/src/`
-* Compiled production assets: `/admin-ui/dist/`
-* Build tooling: `/admin-ui/package.json`, `/admin-ui/webpack.config.js`
-* Detailed notes: `/admin-ui/README.md`
+https://github.com/Nirmalys/hyoka
 
-To rebuild the compressed JavaScript/CSS from source:
+To rebuild the compressed admin UI assets from source:
 
-1. Navigate to the admin UI folder:
+1. Clone the repository:
 
-`cd admin-ui`
+`git clone https://github.com/Nirmalys/hyoka.git`
 
-2. Install dependencies:
+2. Navigate to the admin UI folder:
+
+`cd hyoka/admin-ui`
+
+3. Install dependencies:
 
 `npm install`
 
-3. Build production assets:
+4. Build production assets:
 
 `npm run build`
 
-This regenerates the files under `/admin-ui/dist/` from `/admin-ui/src/`.
-
-See the **Source Code** section above for third-party library source links and Guideline 4 compliance details.
+The build writes production files to `admin-ui/dist/`. Those compiled files are what WordPress loads after the plugin is installed.
 
 Plugin identity for translations and WordPress.org:
 
@@ -404,7 +398,7 @@ No. Hyoka manages reviews, emails, and display widgets separately without alteri
 
 = Where is the human-readable source for the admin JavaScript and CSS? =
 
-The compiled files in `admin-ui/dist/` are built from the source in `admin-ui/src/`. Build instructions and third-party library source links are documented in the Source Code section of this readme and in `admin-ui/README.md`.
+The compiled files in `admin-ui/dist/` are built from the public source repository at https://github.com/Nirmalys/hyoka. Build instructions are documented in the Source Code and Development sections of this readme.
 
 == Screenshots ==
 

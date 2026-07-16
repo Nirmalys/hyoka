@@ -1,0 +1,58 @@
+{
+  "scripts": {
+    "build": "cross-env BABEL_ENV=default NODE_ENV=production webpack --mode production --progress && npm run build:tailwind",
+    "dev": "npm run build:tailwind && cross-env BABEL_ENV=default NODE_ENV=development webpack --config webpack.config.js --watch --mode development --progress --stats-error-details && cp -r dist/* ../react-app/dist/",
+    "start:tailwind": "npx @tailwindcss/cli -i ./src/hyoka.css -o ./dist/hyoka.css --watch",
+    "build:tailwind": "npx @tailwindcss/cli -i ./src/hyoka.css -o ./dist/hyoka.css --minify",
+    "scss_build": "sass assets/scss:assets/css --quiet",
+    "scss_watch": "sass --watch assets/scss:assets/css --quiet"
+  },
+  "name": "hyoka",
+  "version": "1.0.0",
+  "main": "webpack.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "GPL-2.0-or-later",
+  "description": "Hyoka WordPress admin UI source (human-readable). Production bundles are built into dist/.",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "clsx": "^2.1.1",
+    "cross-env": "^7.0.3",
+    "lucide-react": "^1.11.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^7.12.0",
+    "tailwind-variants": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.9",
+    "@tailwindcss/cli": "^4.1.18",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.6.3",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.2.0",
+    "sass": "^1.86.0",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "^4.1.18",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,556 @@
+@import url("https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300..900;1,300..900&display=swap");
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@source "./**/*.{js,jsx,ts,tsx}";
+
+.app-container {
+  position: fixed !important;
+  top: 32px;
+  left: 160px;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 9999;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.10);
+}
+
+/* WP collapses sidebar below 961px */
+@media screen and (max-width: 960px) {
+  .app-container {
+    left: 36px;
+  }
+}
+
+/* WP admin bar switches to 46px on mobile */
+@media screen and (max-width: 782px) {
+  .app-container {
+    top: 46px;
+    left: 0;
+  }
+}
+
+/* When WP sidebar is manually folded (.folded class on body) */
+body.folded .app-container {
+  left: 36px;
+}
+
+@keyframes hyoka-shimmer-slide {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.hyoka-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0%,
+    #e9edf2 18%,
+    #f8f9fb 36%,
+    #e9edf2 54%,
+    #f3f4f6 72%,
+    #f3f4f6 100%
+  );
+  background-size: 200% 100%;
+  animation: hyoka-shimmer-slide 1.35s ease-in-out infinite;
+}
+
+@keyframes hyoka-nav-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.HYOKA-root .hyoka-nav-sub-panel {
+  animation: hyoka-nav-panel-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.HYOKA-root {
+  isolation: isolate;
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  font-family: "Mulish", system-ui, -apple-system, sans-serif !important;
+  transition:
+    color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scoped Resets to neutralize WordPress admin styles */
+.HYOKA-root button,
+.HYOKA-root select,
+.HYOKA-root a {
+  font: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+  text-transform: none !important;
+}
+
+/* Do not use !important on properties we want to control via template editor */
+.HYOKA-root input,
+.HYOKA-root textarea {
+  font-family: inherit !important;
+  font-weight: inherit;
+  color: inherit;
+  line-height: inherit;
+  text-transform: none;
+}
+
+.HYOKA-root [data-editor-typography] textarea,
+.HYOKA-root [data-editor-typography] input[type="text"] {
+  font-size: inherit;
+  text-align: inherit;
+}
+
+.HYOKA-root button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.HYOKA-root .hyoka-modal-close,
+.HYOKA-root .hyoka-modal-close:focus,
+.HYOKA-root .hyoka-modal-close:active,
+.HYOKA-root .hyoka-modal-close:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.HYOKA-root a {
+  text-decoration: none !important;
+}
+
+/* Reset WordPress focus styles and force orange theme */
+.HYOKA-root *:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+.HYOKA-root button:focus,
+.HYOKA-root select:focus,
+.HYOKA-root textarea:focus,
+.HYOKA-root input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.HYOKA-root,
+.HYOKA-root * {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar utilities */
+.HYOKA-root .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.HYOKA-root .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Force hide browser default select arrow */
+.HYOKA-root select.hyoka-admin-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.HYOKA-root select.hyoka-admin-select:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Override browser selection highlight */
+.HYOKA-root select.hyoka-admin-select option:checked,
+.HYOKA-root select.hyoka-admin-select option:hover {
+  background-color: #F59E0B !important;
+  color: white !important;
+}
+
+/* For Firefox */
+.HYOKA-root select.hyoka-admin-select:-moz-focusring {
+  color: transparent !important;
+  text-shadow: 0 0 0 #444 !important;
+}
+
+.HYOKA-root select.hyoka-admin-select::-ms-expand {
+  display: none !important;
+}
+
+/* Unscoped overrides — drawers/modals render via portal into document.body,
+   which is outside .HYOKA-root, so these must not be scoped. */
+select.hyoka-admin-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+select.hyoka-admin-select:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1) !important;
+}
+
+select.hyoka-admin-select option:checked,
+select.hyoka-admin-select option:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
+
+select.hyoka-admin-select:-moz-focusring {
+  color: transparent !important;
+  text-shadow: 0 0 0 #444 !important;
+}
+
+select.hyoka-admin-select::-ms-expand {
+  display: none !important;
+}
+
+/* Search inputs — md border (Product / Store / Visitor review pages) */
+.HYOKA-root .hyoka-search-input-wrap {
+  background-color: #ffffff !important;
+}
+
+.HYOKA-root .hyoka-search-input,
+.HYOKA-root .hyoka-search-input:focus,
+.HYOKA-root .hyoka-search-input:focus-visible {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+}
+
+/* Widget library card — selected state only (no hover) */
+.HYOKA-root .widget-thumb {
+  width: 100%;
+  height: 100%;
+}
+
+.HYOKA-root .widget-thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.HYOKA-root .widget-library-card .widget-preview {
+  background-color: #f5f5f5;
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.HYOKA-root .widget-library-card {
+  transition: box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.HYOKA-root .widget-library-card .widget-thumb-bg,
+.HYOKA-root .widget-library-card .widget-thumb-art,
+.HYOKA-root .widget-library-card .widget-thumb-art-layer path,
+.HYOKA-root .widget-library-card .widget-thumb-art-layer rect {
+  transition:
+    fill 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    fill-opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes widget-preview-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hyoka-use-template-arrow-heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.22);
+  }
+  24% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.14);
+  }
+  48% {
+    transform: scale(1);
+  }
+}
+
+.HYOKA-root .hyoka-use-template-arrow {
+  transform-origin: center;
+  animation: hyoka-use-template-arrow-heartbeat 1.6s ease-in-out infinite;
+}
+
+.HYOKA-root .hyoka-activate-icon {
+  transform-origin: center;
+  animation: hyoka-use-template-arrow-heartbeat 1.6s ease-in-out infinite;
+}
+
+.HYOKA-root .widget-preview-panel {
+  animation: widget-preview-fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Site rating: card-carousel faded gray when not selected */
+.HYOKA-root .widget-library-card:not(.is-active).widget-site-rating .widget-thumb-art-layer path {
+  fill: #131720 !important;
+  fill-opacity: 0.2 !important;
+  stroke: #131720 !important;
+  stroke-opacity: 0.2 !important;
+}
+
+.HYOKA-root .widget-library-card:not(.is-active).widget-site-rating .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.3"] {
+  fill: #131720 !important;
+  fill-opacity: 0.2 !important;
+}
+
+.HYOKA-root .widget-library-card:not(.is-active).widget-site-rating .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.1"] {
+  fill: #131720 !important;
+  fill-opacity: 0.1 !important;
+}
+
+/* Selected: cream preview + golden inner artwork */
+.HYOKA-root .widget-library-card.is-active .widget-preview {
+  background-color: #fff4e0;
+}
+
+.HYOKA-root .widget-library-card.is-active .widget-thumb-bg {
+  fill: #fef1de !important;
+}
+
+.HYOKA-root .widget-library-card.is-active .widget-thumb-art-layer .widget-thumb-inner,
+.HYOKA-root .widget-library-card.is-active .widget-thumb-art-layer .widget-thumb-line {
+  fill-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active .widget-thumb-art-layer .widget-thumb-art:not(.widget-thumb-shell):not(.widget-thumb-skip):not(.widget-thumb-icon) {
+  fill: #f5b800 !important;
+  stroke: #f5b800 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active .widget-thumb-art-layer rect.widget-thumb-art[opacity="0.7"] {
+  fill: #f5b800 !important;
+  fill-opacity: 0.85 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active .widget-thumb-art-layer rect.widget-thumb-art[opacity="0.5"] {
+  fill: #f5b800 !important;
+  fill-opacity: 0.7 !important;
+}
+
+/* Product review selected: dark yellowish tones */
+.HYOKA-root .widget-library-card.is-active.widget-product-review .widget-thumb-inner[fill-opacity="0.1"] {
+  fill: #d4930a !important;
+  fill-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-product-review .widget-thumb-shell {
+  fill: #f5b800 !important;
+  fill-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-product-review .widget-thumb-art-layer path {
+  fill: #f5b800 !important;
+  stroke: #f5b800 !important;
+  fill-opacity: 1 !important;
+  stroke-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-product-review .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.2"] {
+  fill: #d4930a !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-product-review .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.15"] {
+  fill: #c48808 !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+/* Site rating selected: dark yellowish tones */
+.HYOKA-root .widget-library-card.is-active.widget-site-rating .widget-thumb-art-layer path {
+  fill: #c48808 !important;
+  fill-opacity: 1 !important;
+  stroke: #c48808 !important;
+  stroke-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-site-rating .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.3"] {
+  fill: #d4930a !important;
+  fill-opacity: 1 !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-site-rating .widget-thumb-art-layer .widget-thumb-line[fill-opacity="0.1"] {
+  fill: #f5e6b8 !important;
+  fill-opacity: 1 !important;
+}
+
+/* Card carousel: pale shell + solid golden inner blocks/lines */
+.HYOKA-root .widget-library-card.is-active.widget-card-carousel .widget-thumb-shell {
+  fill: #ffe8c2 !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-card-carousel .widget-thumb-inner {
+  fill: #f5b800 !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-card-carousel .widget-thumb-line {
+  fill: #d4930a !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+/* Testimonials: golden quote marks */
+.HYOKA-root .widget-library-card.is-active.widget-testimonials-carousel .widget-thumb-icon {
+  fill: none !important;
+  stroke: #f5b800 !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Video carousel: golden outer frames, white play buttons */
+.HYOKA-root .widget-library-card.is-active.widget-video-carousel .widget-thumb-shell {
+  fill: #f5b800 !important;
+  fill-opacity: 1 !important;
+  stroke: none !important;
+}
+
+.HYOKA-root .widget-library-card.is-active.widget-video-carousel .widget-thumb-icon {
+  fill: none !important;
+  stroke: #ffffff !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Widget editor — pill inputs & layout */
+.widget-editor-label {
+  @apply block text-[12px] font-bold text-gray-700;
+}
+
+.widget-editor-section-title {
+  @apply text-[12px] font-black text-gray-500 uppercase tracking-wide;
+}
+
+.widget-editor-field {
+  @apply px-3 py-2.5 rounded-2xl border border-transparent bg-[#F5F3EF] text-[13px] font-medium text-gray-800 outline-none transition-all;
+}
+
+.widget-editor-field:focus,
+.widget-editor-field:focus-visible {
+  @apply bg-white outline-none;
+  border-color: #F5B800 !important;
+  box-shadow: 0 0 0 2px rgba(245, 184, 0, 0.28) !important;
+}
+
+.widget-editor-field::placeholder {
+  @apply text-gray-400;
+}
+
+.widget-editor-row {
+  @apply rounded-2xl border border-gray-100 bg-[#F5F3EF] px-4 py-3;
+}
+
+.widget-editor-segmented {
+  @apply rounded-2xl border border-gray-100 bg-[#F5F3EF];
+}
+
+.HYOKA-root select.widget-editor-field {
+  accent-color: #F59E0B;
+}
+
+.HYOKA-root select.widget-editor-field option:checked,
+.HYOKA-root select.widget-editor-field option:hover {
+  background-color: #F59E0B !important;
+  color: #ffffff !important;
+}
+
+.HYOKA-root .widget-editor-segmented button:focus,
+.HYOKA-root .widget-editor-segmented button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(245, 184, 0, 0.35) !important;
+}
+
+/* Widget editor — smooth settings panel slide */
+.widget-settings-panel {
+  transition: width 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: width;
+}
+
+.widget-canvas-resize {
+  transition: flex-basis 420ms cubic-bezier(0.32, 0.72, 0, 1), width 420ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.widget-device-frame-label {
+  @apply text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2;
+}
+
+.widget-device-frame-inner {
+  @apply bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden w-full min-w-0;
+}
+
+/* Spam detection — sensitivity slider */
+.spam-sensitivity-slider {
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    #f59e0b 0%,
+    #f59e0b var(--spam-slider-progress, 75%),
+    #fff7ed var(--spam-slider-progress, 75%),
+    #fff7ed 100%
+  );
+}
+
+.spam-sensitivity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 2px solid #fdba74;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.spam-sensitivity-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 2px solid #fdba74;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.spam-sensitivity-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+}

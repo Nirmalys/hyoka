@@ -1,0 +1,179 @@
+:root {
+    --email-bg-color: #F9FAFB;
+    --email-primary-color: #F59E0B;
+    --email-accent-color: #FDB022;
+    --hyoka-form-primary: #F59E0B;
+    --hyoka-form-text: #111827;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--email-bg-color);
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+table {
+    border-collapse: collapse !important;
+}
+
+img {
+    border: 0;
+    height: auto;
+    line-height: 100%;
+    outline: none;
+    text-decoration: none;
+    display: block;
+}
+
+.wrapper {
+    width: 100%;
+    table-layout: fixed;
+    background-color: var(--email-bg-color);
+    padding-bottom: 40px;
+}
+
+.main {
+    background-color: #ffffff;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 600px;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #E5E7EB;
+}
+
+.header {
+    background-color: var(--email-primary-color);
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.content {
+    padding: 40px 30px;
+    color: #374151;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.content p {
+    margin: 0 0 20px;
+}
+
+.footer {
+    padding: 20px;
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 13px;
+}
+
+@media only screen and (max-width: 600px) {
+    .content {
+        padding: 30px 20px;
+    }
+}
+
+/* Public review invite page (shared variables with follow-up email theme) */
+.hyoka-invite-form label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: 600;
+    color: var(--hyoka-form-text, #111827);
+}
+
+.hyoka-invite-form input,
+.hyoka-invite-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+.hyoka-invite-form textarea {
+    resize: vertical;
+}
+
+.hyoka-invite-stars {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0 16px;
+}
+
+.hyoka-invite-stars button {
+    background: none;
+    border: 0;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    color: #d1d5db;
+    transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.hyoka-invite-stars button.is-selected {
+    color: var(--hyoka-form-primary, var(--email-primary-color, #f59e0b)) !important;
+}
+
+.hyoka-invite-stars button:focus-visible {
+    outline: 2px solid var(--email-primary-color, #F59E0B);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+button.hyoka-invite-submit {
+    display: inline-block;
+    margin-top: 0;
+    padding: 12px 24px;
+    background-color: var(--hyoka-form-primary, var(--email-primary-color, #f59e0b));
+    color: #ffffff !important;
+    border: 0;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.hyoka-invite-submit-wrap {
+    margin: 16px 0;
+    text-align: center;
+}
+
+.hyoka-invite-form .subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: -4px 0 16px;
+    line-height: 1.4;
+}
+
+.hyoka-invite-msg {
+    margin-top: 12px;
+    display: none;
+    font-size: 15px;
+}
+
+.hyoka-invite-msg.err {
+    color: #b42318;
+}
+
+.hyoka-invite-msg.ok {
+    color: #027a48;
+}
+
+.hyoka-media-input {
+    margin: 12px 0;
+}

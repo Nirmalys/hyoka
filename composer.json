@@ -1,0 +1,21 @@
+{
+    "name": "ys-innovations/hyoka",
+    "description": "WordPress plugin",
+    "version": "1.0.0",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "YS Innovations",
+            "email": "yuvaraj@ysinnovations.com"
+        }
+    ],
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Hyoka\\App\\": "app/",
+            "Hyoka\\Woocommerce\\": "Woocommerce/"
+        }
+    }
+}

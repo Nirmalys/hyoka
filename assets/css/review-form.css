@@ -1,0 +1,37 @@
+/**
+ * Hyoka review submission form — static styles (wp_enqueue_style).
+ * Merchant colors come from CSS vars on .HYOKA-review-form--styled.
+ */
+
+.HYOKA-review-form--styled {
+	--hyoka-form-primary: #f59e0b;
+	--hyoka-form-text: #1d2939;
+	font-family: var(--hyoka-form-font, inherit);
+	color: var(--hyoka-form-text);
+}
+
+.HYOKA-inline-review-panel:not([hidden]) {
+	margin-top: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.HYOKA-review-form--styled .HYOKA-form-standard-title {
+	color: var(--hyoka-form-text);
+}
+
+.HYOKA-review-form--styled .HYOKA-star-btn.is-active {
+	color: var(--hyoka-form-primary) !important;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-submit,
+.HYOKA-review-form--styled .HYOKA-form-standard-submit {
+	background: var(--hyoka-form-primary) !important;
+	border-color: var(--hyoka-form-primary) !important;
+	color: #fff !important;
+}
+
+.HYOKA-review-form--styled .HYOKA-form-group input:focus,
+.HYOKA-review-form--styled .HYOKA-form-group textarea:focus {
+	border-color: var(--hyoka-form-primary) !important;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--hyoka-form-primary) 20%, transparent) !important;
+}

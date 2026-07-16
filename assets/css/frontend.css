@@ -1,0 +1,828 @@
+/* Hyoka Frontend - Isolation & Reset */
+.hyoka-widgets-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 2rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    clear: both !important;
+    float: none !important;
+    margin: 2rem 0 0;
+    box-sizing: border-box !important;
+}
+
+.hyoka-widgets-stack > .hyoka-root,
+.hyoka-widgets-stack > .HYOKA-review-widget {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    clear: both !important;
+    float: none !important;
+}
+
+.hyoka-footer-widgets-stack {
+    position: relative;
+    z-index: 1;
+    margin: 3rem auto 0;
+    padding: 2rem 1rem;
+    border-top: 1px solid #eaecf0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    clear: both;
+}
+
+.hyoka-root--pending {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-height: 0;
+}
+
+.hyoka-root--pending .hyoka-mount-placeholder {
+    display: none;
+}
+
+.hyoka-root:not(.hyoka-root--pending) {
+    all: revert;
+    /* Revert to browser defaults, overriding theme styles */
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    line-height: 1.5 !important;
+    text-align: left !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) *,
+.hyoka-root:not(.hyoka-root--pending) *::before,
+.hyoka-root:not(.hyoka-root--pending) *::after {
+    box-sizing: border-box !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) h1,
+.hyoka-root:not(.hyoka-root--pending) h2,
+.hyoka-root:not(.hyoka-root--pending) h3,
+.hyoka-root:not(.hyoka-root--pending) h4,
+.hyoka-root:not(.hyoka-root--pending) h5,
+.hyoka-root:not(.hyoka-root--pending) h6,
+.hyoka-root:not(.hyoka-root--pending) p,
+.hyoka-root:not(.hyoka-root--pending) button,
+.hyoka-root:not(.hyoka-root--pending) input,
+.hyoka-root:not(.hyoka-root--pending) textarea {
+    font-family: inherit !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Original Styles --- */
+/* Header Sections */
+.HYOKA-carousel-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.HYOKA-carousel-main-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #101828;
+}
+
+@media (max-width: 768px) {
+    .HYOKA-carousel-main-title {
+        font-size: 1.75rem;
+    }
+}
+
+.HYOKA-rating-summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    color: #344054;
+}
+
+.HYOKA-summary-stars {
+    color: #000;
+    font-size: 1.25rem;
+}
+
+.HYOKA-rating-text {
+    font-weight: 600;
+    color: #344054;
+}
+
+.HYOKA-verified-badge-top {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+}
+
+.HYOKA-verified-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    color: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Review Form Styles — scoped so hyoka-root h3/p reset does not zero margins */
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-widget-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem !important;
+    padding: 0 !important;
+    color: #101828;
+    text-align: center;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-widget-subtitle {
+    margin: 0 0 0.75rem !important;
+    padding: 0 !important;
+    text-align: center;
+}
+
+.HYOKA-review-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #fdfdfd;
+    border: 1px solid #eaecf0;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.HYOKA-review-cta p {
+    margin: 0;
+    font-weight: 500;
+    color: #344054;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-submit-button,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-submit-button:hover,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-submit-button:focus,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-submit-button:active {
+    background: var(--hyoka-button-bg, var(--hyoka-primary, #F59E0B)) !important;
+    color: var(--hyoka-button-text, #fff) !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-secondary-button,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-secondary-button:hover,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-secondary-button:focus,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-secondary-button:active {
+    background: #fdfdfd !important;
+    color: #344054 !important;
+    border: 1px solid #eaecf0 !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.HYOKA-inline-review-panel {
+    background: #f9fafb;
+    border: 1px solid #eaecf0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.HYOKA-inline-review-panel[hidden] {
+    display: none !important;
+}
+
+.HYOKA-review-form--styled {
+    background: transparent;
+}
+
+.HYOKA-form-standard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.HYOKA-form-standard-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.HYOKA-form-standard-stars {
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.HYOKA-form-standard-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.HYOKA-form-standard-submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.HYOKA-form-media-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.HYOKA-media-upload-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 88px;
+    padding: 1rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #667085;
+    cursor: pointer;
+    text-align: center;
+}
+
+.HYOKA-media-upload-card input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.HYOKA-media-upload-card-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.HYOKA-media-upload-card-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-heading {
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-subtitle {
+    margin: 0 0 1rem;
+    line-height: 1.5;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-star-rating {
+    margin-bottom: 0.5rem;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-star-hint {
+    margin: 0.25rem 0 0;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-form-actions {
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-submit {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-divider {
+    width: 100%;
+}
+
+.HYOKA-review-form--styled .HYOKA-styled-text-block {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #344054;
+}
+
+.HYOKA-review-step {
+    display: none;
+}
+
+.HYOKA-review-step.is-active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.HYOKA-review-step h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: #101828;
+}
+
+.HYOKA-review-step-label {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #98a2b3;
+}
+
+.HYOKA-review-step-hint {
+    margin: 1rem 0 0;
+    font-size: 0.875rem;
+    color: #667085;
+}
+
+.HYOKA-media-upload-group {
+    margin-top: 1rem;
+}
+
+.HYOKA-media-upload-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px dashed #d0d5dd;
+    border-radius: 12px;
+    background: #f9fafb;
+}
+
+.HYOKA-media-upload-field .HYOKA-review-media {
+    width: 100%;
+    padding: 0.5rem 0;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: #344054;
+    cursor: pointer;
+}
+
+.HYOKA-media-upload-hint {
+    font-size: 0.8125rem;
+    color: #667085;
+}
+
+.HYOKA-star-rating {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-star-btn,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-star-btn:hover,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-star-btn:focus,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-star-btn:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    font-size: 2.5rem !important;
+    color: #98a2b3 !important;
+    cursor: pointer !important;
+    transition: color 0.1s !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-star-btn.is-active {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B)) !important;
+}
+
+.HYOKA-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.HYOKA-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #344054;
+}
+
+.HYOKA-form-group input,
+.HYOKA-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #101828;
+    background: #fff;
+}
+
+.HYOKA-form-group input:focus,
+.HYOKA-form-group textarea:focus {
+    outline: none;
+    border-color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.HYOKA-inline-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.HYOKA-form-message {
+    margin-top: 1rem;
+    font-weight: 500;
+    padding: 0.75rem;
+    border-radius: 6px;
+    display: none;
+}
+
+.HYOKA-form-message.is-success {
+    display: block;
+    background: #ecfdf3;
+    color: #027a48;
+    border: 1px solid #d1fadf;
+}
+
+.HYOKA-form-message.is-error {
+    display: block;
+    background: #fef3f2;
+    color: #b42318;
+    border: 1px solid #fee4e2;
+}
+
+.HYOKA-other-reviews-head {
+    border-top: 1px solid #eaecf0;
+    padding-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.HYOKA-other-reviews-head h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #101828;
+}
+
+.HYOKA-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.HYOKA-review-row {
+    background: transparent;
+    border: none;
+    padding: 1.25rem 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.hyoka-root.hyoka-widget-styled .HYOKA-review-row {
+    background: var(--hyoka-bg, transparent);
+    border: 1px solid var(--hyoka-border, #eaecf0);
+    padding: 1.25rem;
+    border-radius: var(--hyoka-card-radius, 8px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.HYOKA-review-row p {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: inherit;
+    line-height: 1.5;
+}
+
+.hyoka-root.hyoka-widget-styled .HYOKA-review-row p {
+    color: var(--hyoka-card-body, #475467);
+}
+
+.HYOKA-review-stars {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    font-size: var(--hyoka-star-size, 1.1rem);
+    margin-bottom: 0.5rem;
+}
+
+.HYOKA-review-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.HYOKA-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    color: #fff;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.HYOKA-review-author div strong {
+    display: block;
+    color: var(--hyoka-card-title, #101828);
+    line-height: 1.2;
+}
+
+.HYOKA-review-author div small {
+    color: #667085;
+}
+
+.HYOKA-review-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-action-btn,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-action-btn:hover,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-action-btn:focus,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-action-btn:active {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    color: #667085 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: color 0.2s ease !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-action-btn:hover {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B)) !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-like-btn.is-liked,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-like-btn.is-liked:hover,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-like-btn.is-liked:focus,
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-like-btn.is-liked:active {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B)) !important;
+}
+
+.hyoka-root:not(.hyoka-root--pending) .HYOKA-like-btn.is-liked svg {
+    fill: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B)) !important;
+    stroke: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B)) !important;
+}
+
+.HYOKA-action-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.5;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.HYOKA-review-product-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f2f4f7;
+}
+
+.HYOKA-review-product-link img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.HYOKA-review-product-link small {
+    display: block;
+    color: #667085;
+    margin-bottom: 0.2rem;
+}
+
+.HYOKA-review-product-link a {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.HYOKA-empty-reviews {
+    text-align: center;
+    color: #667085;
+    padding: 2rem 0;
+    font-style: italic;
+}
+
+/* ── Media upload status indicators ── */
+.HYOKA-upload-status {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.HYOKA-upload-item {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+}
+
+.HYOKA-upload-pending {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.HYOKA-upload-done {
+    background: #ecfdf3;
+    color: #027a48;
+    border: 1px solid #d1fadf;
+}
+
+.HYOKA-upload-error {
+    background: #fef3f2;
+    color: #b42318;
+    border: 1px solid #fee4e2;
+}
+
+/* ── Review Summary & Histogram ── */
+.HYOKA-summary-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin-top: 1.75rem;
+    margin-bottom: 2rem;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hyoka-root.hyoka-widget-styled .HYOKA-summary-section {
+    padding: 1.5rem 2rem;
+    background: var(--hyoka-bg, transparent);
+    border: 1px solid var(--hyoka-border, #eaecf0);
+    border-radius: var(--hyoka-card-radius, 12px);
+}
+
+.HYOKA-main-stats {
+    flex: 0 0 auto;
+    text-align: center;
+    min-width: 150px;
+}
+
+.HYOKA-average-score {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: inherit;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.hyoka-root.hyoka-widget-styled .HYOKA-average-score {
+    color: var(--hyoka-text, #101828);
+}
+
+.HYOKA-average-stars {
+    color: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    font-size: var(--hyoka-star-size, 1.5rem);
+    margin-bottom: 0.5rem;
+}
+
+.HYOKA-summary-section .HYOKA-total-count {
+    font-size: 0.9rem;
+    color: var(--hyoka-card-body, #667085);
+}
+
+.HYOKA-histogram {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 250px;
+}
+
+.HYOKA-histogram-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #344054;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 2px 4px;
+    transition: background-color 0.2s ease;
+}
+
+.HYOKA-histogram-row:hover {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.HYOKA-histogram-row.is-active {
+    background: rgba(245, 158, 11, 0.18);
+}
+
+.HYOKA-histogram-row.is-active .HYOKA-bar-fill {
+    background: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+}
+
+.HYOKA-star-label {
+    width: 60px;
+    white-space: nowrap;
+}
+
+.HYOKA-bar-container {
+    flex: 1;
+    height: 8px;
+    background: #f2f4f7;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.HYOKA-bar-fill {
+    height: 100%;
+    background: var(--hyoka-star-color, var(--hyoka-primary, #F59E0B));
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.HYOKA-count-label {
+    width: 30px;
+    text-align: right;
+    color: #667085;
+}
+
+.HYOKA-page-info {
+    font-weight: 600;
+    color: #344054;
+}
+
+@media (max-width: 600px) {
+    .HYOKA-summary-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .HYOKA-histogram {
+        width: 100%;
+    }
+}

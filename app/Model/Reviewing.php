@@ -141,12 +141,12 @@ class Reviewing
             'product_id'   => absint($data['product_id'] ?? 0),
             'rating'       => max(1, min(5, absint($data['rating'] ?? 5))),
             'content'      => self::encodeReviewContent([
-                'text'   => sanitize_textarea_field($data['content'] ?? ''),
+                'text'   => sanitize_textarea_field((string) ($data['content'] ?? '')),
                 'title'  => $data['title'] ?? '',
                 'author' => $data['author'] ?? '',
             ]),
             'store_review' => isset($data['store_review']) && $data['store_review'] !== null
-                ? sanitize_textarea_field($data['store_review'])
+                ? sanitize_textarea_field((string) $data['store_review'])
                 : '',
             'email'        => sanitize_email($data['email'] ?? ''),
             'status'       => Review::normalizeStatus($data['status'] ?? 'pending'),
@@ -163,7 +163,7 @@ class Reviewing
         }
 
         if (! empty($data['question'])) {
-            $insert_data['question'] = sanitize_textarea_field($data['question']);
+            $insert_data['question'] = sanitize_textarea_field((string) $data['question']);
         }
 
         $model     = new Review();
@@ -642,30 +642,18 @@ class Reviewing
     public static function getWidgetSettingsFromPost(): array
     {
         // Request bag is bound in Ajax::verifyNonce() after check_ajax_referer().
+        // No $_REQUEST / $_GET fallback — that path is unused and triggers Plugin Check.
         $widget_id = Wp::postKey('widget_id');
-        if ($widget_id === '' && isset($_REQUEST['widget_id']) && is_scalar($_REQUEST['widget_id'])) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postKey().
-            $widget_id = sanitize_key(sanitize_text_field(wp_unslash((string) $_REQUEST['widget_id'])));
-        }
 
         $enabled = null;
         if (Wp::hasPost('enabled')) {
             // Accept 1/0 (admin UI) and true/false strings (older bundles / FormData).
             $enabled = Wp::postBoolean('enabled', false);
-        } elseif (isset($_REQUEST['enabled']) && is_scalar($_REQUEST['enabled'])) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postBoolean().
-            $enabled = Wp::sanitizeBooleanInput(
-                sanitize_text_field(wp_unslash((string) $_REQUEST['enabled'])),
-                false
-            );
         }
 
         $placement = null;
         if (Wp::hasPost('placement')) {
             $placement = Wp::postText('placement');
-        } elseif (isset($_REQUEST['placement']) && is_scalar($_REQUEST['placement'])) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postText().
-            $placement = sanitize_text_field(wp_unslash((string) $_REQUEST['placement']));
         }
 
         return [
@@ -764,8 +752,9 @@ class Reviewing
             }
         }
 
-        $message = 'Widget settings saved.';
-        if ($enabled !== null) {
+        if ($enabled === null) {
+            $message = 'Widget settings saved.';
+        } else {
             $message = $enabled
                 ? 'Widget activated successfully.'
                 : 'Widget deactivated successfully.';

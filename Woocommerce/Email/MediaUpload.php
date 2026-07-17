@@ -79,14 +79,18 @@ class MediaUpload
             return;
         }
 
+        // CSRF first — do not inspect $_FILES / $_POST until the media-form nonce passes.
+        check_ajax_referer('media-form', 'media_nonce');
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() above.
         if (empty($_FILES['review_media']) || ! is_array($_FILES['review_media'])) {
             return;
         }
 
-        check_ajax_referer('media-form', 'media_nonce');
-
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() above.
         $review_id = isset($_POST['review_id']) ? absint(wp_unslash($_POST['review_id'])) : 0;
-        $token     = isset($_POST['media_token'])
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() above.
+        $token = isset($_POST['media_token'])
             ? sanitize_text_field(wp_unslash((string) $_POST['media_token']))
             : '';
 
@@ -106,6 +110,7 @@ class MediaUpload
         }
 
         // Sanitize early / validate before WordPress processes the upload.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- check_ajax_referer() already ran at the top of this handler.
         $name = isset($_FILES['review_media']['name'])
             ? sanitize_file_name(wp_unslash((string) $_FILES['review_media']['name']))
             : '';
@@ -120,6 +125,7 @@ class MediaUpload
         $size = isset($_FILES['review_media']['size'])
             ? absint($_FILES['review_media']['size'])
             : 0;
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         if ($name === '' || $tmp_name === '' || $error !== UPLOAD_ERR_OK || ! is_uploaded_file($tmp_name)) {
             wp_send_json_error(['message' => __('Upload failed.', 'hyoka')]);

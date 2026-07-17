@@ -292,73 +292,83 @@ The plugin provides flexible email automation, customizable templates, quality c
 
 This plugin complies with WordPress.org Plugin Guideline 4 (Code must be mostly human readable): https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#4-code-must-be-mostly-human-readable
 
-Project source repository:
+= Hyoka – Product reviews & ratings for WooCommerce =
 
-https://github.com/Nirmalys/hyoka
+Hyoka is a WooCommerce extension that enables store owners to collect, moderate, and showcase product reviews, photo and video UGC, store testimonials, review request emails, and review widgets.
 
-The GitHub repository contains the complete human-readable source corresponding to this plugin release and can be used to rebuild all generated assets included in the distributed plugin package.
+This repository contains the complete human-readable source code used to generate the JavaScript and CSS assets distributed with the WordPress plugin.
 
-All JavaScript and CSS files located under `admin-ui/dist/` are generated production assets built from the human-readable source code in this repository. Those files (for example hashed `*.bundle.js` / `bundle.*.js` outputs and `hyoka.css`) are what WordPress loads at runtime after the plugin is installed.
+= Repository Structure =
 
-Source maps are not included in the release package because the complete human-readable source code is available in the public repository above.
+admin-ui/
+├── src/                    # React source code
+├── dist/                   # Production build (generated)
+├── package.json
+├── webpack.config.js
+├── tailwind.config.js
+└── postcss.config.js
 
-The generated files under `admin-ui/dist/` should not be edited directly. Changes should be made to the source files under `admin-ui/src/` and rebuilt using the documented build process.
+app/                        # PHP plugin source
+Woocommerce/                # WooCommerce integrations
+Widgets/                    # Storefront widget templates
+assets/                     # Shared CSS / JS assets
+languages/                  # Translation template
+hyoka.php
+composer.json
 
-The repository contains:
+= Requirements =
 
-* `admin-ui/src/` — Human-readable React / JavaScript source
-* `admin-ui/src/index.js` — Main entry point
-* `admin-ui/src/App.js` — App root
-* `admin-ui/src/hyoka.css` — Styles source
-* `admin-ui/package.json` — Build dependencies
-* `admin-ui/package-lock.json` — Locked dependency versions
-* `admin-ui/webpack.config.js` — Webpack build configuration
-* `admin-ui/postcss.config.js` — CSS build configuration
-* `admin-ui/tailwind.config.js` — Tailwind CSS configuration
-* `admin-ui/README.md` — Build documentation
+* Node.js 18+
+* npm
+* PHP 7.4+
+* WordPress 5.3+
+* WooCommerce
 
-Third-party developer libraries bundled into the compressed vendor assets are declared in `admin-ui/package.json`. Their publicly maintained source repositories are:
+= Installation =
 
-* axios — https://github.com/axios/axios
-* clsx — https://github.com/lukeed/clsx
-* lucide-react — https://github.com/lucide-icons/lucide
-* react-router / react-router-dom — https://github.com/remix-run/react-router
-* tailwind-variants — https://github.com/nextui-org/tailwind-variants
-* Tailwind CSS (build-time CSS tooling) — https://github.com/tailwindlabs/tailwindcss
-* Webpack and related build tools — https://github.com/webpack/webpack
+Clone the repository:
 
-React and ReactDOM are externalized at build time and loaded from WordPress core (`wp-element` / registered React scripts), not shipped as obfuscated copies of those libraries inside the plugin bundles.
+git clone https://github.com/Nirmalys/hyoka.git
 
-== Development ==
+Install frontend dependencies:
 
-Build instructions live in the project source repository listed in the Source Code section above (`https://github.com/Nirmalys/hyoka`).
+cd admin-ui
+npm install
 
-To rebuild the compressed admin UI assets from source:
+= Development =
 
-1. Clone the repository:
+Run the development build:
 
-`git clone https://github.com/Nirmalys/hyoka.git`
+npm run dev
 
-2. Navigate to the admin UI folder:
+= Production Build =
 
-`cd hyoka/admin-ui`
+Generate the production JavaScript and CSS:
 
-3. Install dependencies:
+npm run build
 
-`npm install`
+The generated files are written to:
 
-4. Build production assets:
+admin-ui/dist/
 
-`npm run build`
+These files are the compiled assets included in the WordPress plugin release.
 
-Running `npm run build` generates the production assets placed in `admin-ui/dist/`, which are the files included in the WordPress plugin release.
+= Source Code =
 
-The `1.0.0` Git tag corresponds to this plugin release.
+The following directories contain the original source code:
 
-Plugin identity for translations and WordPress.org:
+* admin-ui/src/
+* app/
+* Woocommerce/
+* Widgets/
 
-* Plugin slug: `hyoka`
-* Text domain: `hyoka`
+No generated JavaScript files should be modified directly.
+
+= License =
+
+GPL-2.0-or-later
+
+https://www.gnu.org/licenses/gpl-2.0.html
 
 == Frequently Asked Questions ==
 

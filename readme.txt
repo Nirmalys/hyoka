@@ -292,20 +292,30 @@ The plugin provides flexible email automation, customizable templates, quality c
 
 This plugin complies with WordPress.org Plugin Guideline 4 (Code must be mostly human readable): https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#4-code-must-be-mostly-human-readable
 
-The JavaScript and CSS files under `admin-ui/dist/` (including `bundle.js`, `app.bundle.js`, `widgets.bundle.js`, `vendors.bundle.js`, and other `*.bundle.js` files) are generated/compressed production builds used at runtime.
+Project source repository:
 
-The compiled, human-readable source code for those assets is publicly available at:
+https://github.com/Nirmalys/hyoka
 
-https://github.com/Nirmalys/hyoka/tree/hyoka
+The GitHub repository contains the complete human-readable source corresponding to this plugin release and can be used to rebuild all generated assets included in the distributed plugin package.
 
-In that repository you will find:
+All JavaScript and CSS files located under `admin-ui/dist/` are generated production assets built from the human-readable source code in this repository. Those files (for example hashed `*.bundle.js` / `bundle.*.js` outputs and `hyoka.css`) are what WordPress loads at runtime after the plugin is installed.
 
-* Application source: `admin-ui/src/`
-* Main entry point: `admin-ui/src/index.js`
-* App root: `admin-ui/src/App.js`
-* Styles source: `admin-ui/src/hyoka.css`
-* Build tooling: `admin-ui/package.json`, `admin-ui/package-lock.json`, `admin-ui/webpack.config.js`, `admin-ui/postcss.config.js`
-* Build notes: `admin-ui/README.md`
+Source maps are not included in the release package because the complete human-readable source code is available in the public repository above.
+
+The generated files under `admin-ui/dist/` should not be edited directly. Changes should be made to the source files under `admin-ui/src/` and rebuilt using the documented build process.
+
+The repository contains:
+
+* `admin-ui/src/` — Human-readable React / JavaScript source
+* `admin-ui/src/index.js` — Main entry point
+* `admin-ui/src/App.js` — App root
+* `admin-ui/src/hyoka.css` — Styles source
+* `admin-ui/package.json` — Build dependencies
+* `admin-ui/package-lock.json` — Locked dependency versions
+* `admin-ui/webpack.config.js` — Webpack build configuration
+* `admin-ui/postcss.config.js` — CSS build configuration
+* `admin-ui/tailwind.config.js` — Tailwind CSS configuration
+* `admin-ui/README.md` — Build documentation
 
 Third-party developer libraries bundled into the compressed vendor assets are declared in `admin-ui/package.json`. Their publicly maintained source repositories are:
 
@@ -321,15 +331,13 @@ React and ReactDOM are externalized at build time and loaded from WordPress core
 
 == Development ==
 
-The full Hyoka source code and build instructions are publicly available at:
-
-https://github.com/Nirmalys/hyoka/tree/hyoka
+Build instructions live in the project source repository listed in the Source Code section above (`https://github.com/Nirmalys/hyoka`).
 
 To rebuild the compressed admin UI assets from source:
 
-1. Clone the repository (hyoka branch):
+1. Clone the repository:
 
-`git clone -b hyoka https://github.com/Nirmalys/hyoka.git`
+`git clone https://github.com/Nirmalys/hyoka.git`
 
 2. Navigate to the admin UI folder:
 
@@ -343,7 +351,9 @@ To rebuild the compressed admin UI assets from source:
 
 `npm run build`
 
-The build writes production files to `admin-ui/dist/`. Those compiled files are what WordPress loads after the plugin is installed.
+Running `npm run build` generates the production assets placed in `admin-ui/dist/`, which are the files included in the WordPress plugin release.
+
+The `1.0.0` Git tag corresponds to this plugin release.
 
 Plugin identity for translations and WordPress.org:
 
@@ -398,7 +408,7 @@ No. Hyoka manages reviews, emails, and display widgets separately without alteri
 
 = Where is the human-readable source for the admin JavaScript and CSS? =
 
-The compiled files in `admin-ui/dist/` are built from the public source repository at https://github.com/Nirmalys/hyoka/tree/hyoka. Build instructions are documented in the Source Code and Development sections of this readme.
+See the Source Code section of this readme. The public repository at https://github.com/Nirmalys/hyoka contains the complete human-readable source used to build the generated assets under `admin-ui/dist/`.
 
 == Screenshots ==
 

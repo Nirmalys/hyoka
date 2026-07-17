@@ -30,7 +30,22 @@ class ReviewInvite
             return;
         }
 
-        $plain = Link::getInviteFromRequest();
+        // Reading a signed invite token from the URL.
+        //
+        // This is not a form submission or CSRF-protected action.
+        // The unguessable invite token is the authorization mechanism.
+        // Validation is performed by:
+        // - SHA-256 hash lookup
+        // - expiry check
+        // - single-use (consumed) check
+        // - completed-order / customer-row resolution
+        //
+        // A WordPress nonce cannot be used here: invite links live ~30 days,
+        // recipients are typically logged out, and WP nonces are session-scoped.
+        // Actual review submission is protected separately with hyoka_nonce / wp_rest.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Invite bearer token is validated separately (hash/expiry/single-use); not a form POST.
+        $query = (isset($_GET) && is_array($_GET)) ? wp_unslash($_GET) : [];
+        $plain = Link::getInviteFromRequest(is_array($query) ? $query : []);
         if ($plain === null) {
             return;
         }

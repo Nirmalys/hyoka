@@ -108,13 +108,21 @@ class Ajax
     }
 
     /**
-     * Authorization check after check_ajax_referer() in each handler.
+     * Capability check + bind unslashed POST for helpers.
+     *
+     * Must be called immediately after check_ajax_referer() in each handler.
+     * Helpers (Wp::post*) only sanitize the bound bag — they never touch $_POST
+     * and are not an authorization boundary. Callers own nonce + capability checks.
      *
      * @param bool $require_manage_options Require manage_options for admin-only actions.
      */
     private static function verifyNonce(bool $require_manage_options = false): void
     {
         self::requireCapability($require_manage_options);
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() already ran in the calling handler before this bind.
+        $post = (isset($_POST) && is_array($_POST)) ? wp_unslash($_POST) : [];
+        Wp::setRequest(is_array($post) ? $post : []);
     }
 
     public static function handleFetchWidgets()
@@ -231,7 +239,12 @@ class Ajax
             'review_type'    => Wp::postKey('review_type', 'review'),
             'store_review'   => Wp::postTextarea('store_review'),
         ];
-        $media = \Hyoka\App\Model\Meta::getMediaFromPost();
+        // File uploads only occur on this already nonce-protected review submission
+        // path (check_ajax_referer above). The bag is passed into Meta::getMediaFromPost()
+        // so that helper does not read $_FILES for authorization.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by check_ajax_referer() in this handler; uploads are validated in Meta via is_uploaded_file()/wp_check_filetype_and_ext().
+        $files = (isset($_FILES) && is_array($_FILES)) ? $_FILES : [];
+        $media = \Hyoka\App\Model\Meta::getMediaFromPost($files);
         if ($media !== []) {
             $media_json = wp_json_encode($media);
             if ($media_json === false) {
@@ -572,7 +585,7 @@ class Ajax
     public static function handleLikeReview()
     {
         check_ajax_referer('hyoka_nonce', '_ajax_nonce');
-        self::requireCapability();
+        self::verifyNonce();
 
         $data = Reviewing::handleLikeReviewRequest([
             'review_id' => Wp::postInt('review_id'),

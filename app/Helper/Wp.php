@@ -437,12 +437,8 @@ class Wp
      */
     public static function getWidgetStyleFromPost(): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce (Ajax::handleSaveWidgetStyles).
-        $elements_raw = '';
-        if (isset($_POST['widget_elements']) && is_scalar($_POST['widget_elements'])) {
-            $elements_raw = sanitize_text_field(wp_unslash((string) $_POST['widget_elements']));
-        }
-        $elements = self::parseJsonElements($elements_raw);
+        // Reads from request bag bound in Ajax::verifyNonce() after check_ajax_referer().
+        $elements = self::parseJsonElements(self::postTextarea('widget_elements'));
 
         $data = [
             'widget_title'           => self::postText('widget_title'),
@@ -496,7 +492,6 @@ class Wp
         if (! in_array($data['widget_layout'], ['carousel', 'grid', 'list'], true)) {
             $data['widget_layout'] = 'carousel';
         }
-        // phpcs:enable
 
         return $data;
     }
@@ -764,18 +759,90 @@ class Wp
     }
 
     /**
-     * POST helpers only read and sanitize. Callers must verify nonces at the
-     * AJAX / REST / form entry point before using these methods.
+     * Unslashed request bag bound by Ajax/REST after nonce verification.
+     * Helpers read from this array only — they never touch $_POST directly.
+     *
+     * @var array<string, mixed>|null
      */
-    public static function postBoolean(string $key, bool $default = false): bool
+    private static $request = null;
+
+    /**
+     * Bind an already-unslashed request array after check_ajax_referer() / REST nonce.
+     *
+     * @param array<string, mixed> $request Typically wp_unslash( $_POST ).
+     */
+    public static function setRequest(array $request): void
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        self::$request = $request;
+    }
+
+    public static function clearRequest(): void
+    {
+        self::$request = null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function requestBag(): array
+    {
+        return is_array(self::$request) ? self::$request : [];
+    }
+
+    /**
+     * Pure sanitizers — prefer these when the value is already taken from a
+     * nonce-verified request (same function as check_ajax_referer / wp_verify_nonce).
+     *
+     * @param mixed $value
+     */
+    public static function sanitizeTextarea($value, string $default = ''): string
+    {
+        if (! is_scalar($value)) {
             return $default;
         }
 
-        $value = sanitize_text_field(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return sanitize_textarea_field(wp_unslash((string) $value));
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public static function sanitizeText($value, string $default = ''): string
+    {
+        if (! is_scalar($value)) {
+            return $default;
+        }
+
+        return sanitize_text_field(wp_unslash((string) $value));
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public static function sanitizeEmailValue($value, string $default = ''): string
+    {
+        if (! is_scalar($value)) {
+            return $default;
+        }
+
+        return sanitize_email(wp_unslash((string) $value));
+    }
+
+    /**
+     * Request-bag helpers. Not an authorization boundary.
+     *
+     * Call Wp::setRequest() from the AJAX/REST entry point after
+     * check_ajax_referer() / wp_verify_nonce(). These methods only read and
+     * sanitize values from that already-verified bag — they never touch $_POST.
+     */
+    public static function postBoolean(string $key, bool $default = false): bool
+    {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
+            return $default;
+        }
+
+        $value = self::sanitizeText($request[$key], '');
 
         if ($value === '0') {
             return false;
@@ -790,75 +857,69 @@ class Wp
 
     public static function postText(string $key, string $default = ''): string
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return sanitize_text_field(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return self::sanitizeText($request[$key], $default);
     }
 
     public static function postTextarea(string $key, string $default = ''): string
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return sanitize_textarea_field(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return self::sanitizeTextarea($request[$key], $default);
     }
 
     public static function postEmail(string $key, string $default = ''): string
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return sanitize_email(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return self::sanitizeEmailValue($request[$key], $default);
     }
 
     public static function postKsesPost(string $key, string $default = ''): string
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return wp_kses_post(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return wp_kses_post(wp_unslash((string) $request[$key]));
     }
 
     public static function hasPost(string $key): bool
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        return isset($_POST[$key]) && is_scalar($_POST[$key]);
-        // phpcs:enable
+        $request = self::requestBag();
+
+        return isset($request[$key]) && is_scalar($request[$key]);
     }
 
     public static function postKey(string $key, string $default = ''): string
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return sanitize_key(wp_unslash((string) $_POST[$key]));
-        // phpcs:enable
+        return sanitize_key(self::sanitizeText($request[$key], $default));
     }
 
     public static function postInt(string $key, int $default = 0): int
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key]) || ! is_scalar($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key]) || ! is_scalar($request[$key])) {
             return $default;
         }
 
-        return absint(wp_unslash($_POST[$key]));
-        // phpcs:enable
+        return absint($request[$key]);
     }
 
     /**
@@ -866,17 +927,15 @@ class Wp
      */
     public static function postIntList(string $key): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Caller verifies nonce at request entry point.
-        if (! isset($_POST[$key])) {
+        $request = self::requestBag();
+        if (! isset($request[$key])) {
             return [];
         }
 
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated in the loops below using absint() and sanitize_text_field().
-        $raw = wp_unslash($_POST[$key]);
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $raw = $request[$key];
 
         if (is_string($raw)) {
-            $parts = array_filter(array_map('trim', explode(',', sanitize_text_field($raw))));
+            $parts = array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($raw)))));
 
             return array_values(array_filter(array_map('absint', $parts)));
         }
@@ -893,7 +952,6 @@ class Wp
         }
 
         return array_values(array_filter($ids));
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
     }
 
     /**

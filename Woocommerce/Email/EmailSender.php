@@ -758,7 +758,7 @@ class EmailSender
      */
     public static function getSettingsFromPost(): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified in Ajax::handleSaveFollowupSettings().
+        // Reads from Wp request bag bound in Ajax::verifyNonce() after check_ajax_referer().
         $ctx = Wp::postKey('save_context', 'full');
         if (! in_array($ctx, ['automation', 'template', 'submission_form', 'full'], true)) {
             $ctx = 'full';
@@ -837,7 +837,6 @@ class EmailSender
                 'last_save_context'         => 'full',
             ]
         );
-        // phpcs:enable
     }
 
     /**

@@ -114,31 +114,48 @@ class Link
     }
 
     /**
-     * Read invite token from the public emailed URL.
+     * Sanitize a raw invite token value (from a query arg or request bag).
      *
-     * This is not a form submission: authorization is the unguessable bearer token
-     * (SHA-256 hashed at rest, expiry + single-use). WordPress form nonces are
-     * session-scoped and expire too quickly for 30-day invite links.
-     *
-     * Early-returns when the query arg is absent so front-end page loads that are
-     * not invite visits do no invite work (WP.org performance guidance).
-     * CSRF for the actual review POST is enforced via hyoka_nonce / wp_rest.
+     * @param mixed $value
      */
-    public static function getInviteFromRequest(): ?string
+    public static function sanitizeInviteToken($value): ?string
     {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public signed invite token (not a form POST); validated via getInviteStatus()/hash.
-        if (! isset($_GET[self::QUERY_ARG]) || ! is_scalar($_GET[self::QUERY_ARG])) {
+        if (! is_scalar($value)) {
             return null;
         }
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Same signed-token auth as above.
-        $raw = sanitize_text_field(wp_unslash((string) $_GET[self::QUERY_ARG]));
+        $raw = sanitize_text_field(wp_unslash((string) $value));
         $raw = trim(rawurldecode($raw));
         if ($raw === '' || strlen($raw) < 32) {
             return null;
         }
 
         return $raw;
+    }
+
+    /**
+     * Read invite token from a query array (typically wp_unslash( $_GET )).
+     *
+     * This is not a form submission or CSRF-protected action. The unguessable
+     * invite token is the authorization (same pattern as password-reset or
+     * WooCommerce order-pay links). Validation happens via getInviteStatus() /
+     * getInviteByToken(): SHA-256 hash lookup, expiry, single-use, and customer
+     * row resolution. WordPress form nonces are intentionally not used — invite
+     * links live ~30 days and recipients are typically logged out.
+     *
+     * Pass the query bag from ReviewInvite::renderInvitePage() so this helper
+     * never touches $_GET. Mutating review submission is protected separately
+     * with hyoka_nonce (AJAX) or wp_rest (REST).
+     *
+     * @param array<string, mixed> $query Unslashed query args from the invite URL.
+     */
+    public static function getInviteFromRequest(array $query = []): ?string
+    {
+        if (! isset($query[self::QUERY_ARG]) || ! is_scalar($query[self::QUERY_ARG])) {
+            return null;
+        }
+
+        return self::sanitizeInviteToken($query[self::QUERY_ARG]);
     }
 
     /**

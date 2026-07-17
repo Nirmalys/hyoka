@@ -421,8 +421,8 @@ class ProductReview
 
     /**
      * @param array<string, mixed> $params Optional already-sanitized/request data (preferred).
-     *                                     When empty, values are read from $_POST after nonce verification
-     *                                     via Wp helpers.
+     *                                     When empty, values are read from the nonce-bound
+     *                                     Wp request bag (set in Ajax::verifyNonce).
      * @return array{ok: bool, message: string}
      */
     public static function submitReview(array $params = []): array
@@ -517,8 +517,8 @@ class ProductReview
 
         $status = Moderation::resolveStatus($title . ' ' . $review, ['rating' => $rating]);
 
-        // Media must be supplied by the entry point (AJAX attaches via getMediaFromPost after
-        // check_ajax_referer; REST sends media_json in the verified request body).
+        // Media must be supplied by the entry point (AJAX attaches via getMediaFromPost($files)
+        // after check_ajax_referer; REST sends media_json in the verified request body).
         $media = Meta::getMediaFromParams($params);
 
         $data = [

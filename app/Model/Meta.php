@@ -502,121 +502,135 @@ class Meta
     }
 
     /**
-     * Read review media from the current request ($_POST media_json and/or $_FILES).
+     * Read review media from a nonce-verified request.
      *
-     * Caller must verify the request nonce at the AJAX/REST entry point before calling.
-     * This helper only sanitizes, validates, and normalizes upload data — it does not authorize.
+     * Not an authorization boundary: this helper never reads $_FILES itself.
+     * Callers must already have verified the request origin, then pass the
+     * upload bag in:
      *
+     *   check_ajax_referer( 'hyoka_nonce', '_ajax_nonce' );
+     *   // … or verifyRestNonce() …
+     *   Meta::getMediaFromPost( $_FILES );
+     *
+     * - media_json comes from the Wp request bag bound after that nonce check
+     * - $files is the upload bag from the same verified entry point
+     * - This helper only sanitizes, type-checks, and normalizes upload data
+     *
+     * @param array<string, mixed> $files Upload request bag supplied only after
+     *                                    check_ajax_referer() or verifyRestNonce()
+     *                                    has already succeeded.
      * @return array<int, array<string, mixed>>
      */
-    public static function getMediaFromPost(): array
+    public static function getMediaFromPost(array $files = []): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified by caller; $_FILES tmp_name is a PHP upload path validated via is_uploaded_file() / wp_check_filetype_and_ext().
-        $media_json = '';
-        if (isset($_POST['media_json']) && is_scalar($_POST['media_json'])) {
-            $media_json = sanitize_textarea_field(wp_unslash((string) $_POST['media_json']));
-        }
+        $media_json = Wp::postTextarea('media_json');
         $media_data = $media_json !== '' ? self::normalizeMediaItems($media_json) : [];
 
+        $upload = isset($files['review_media']) && is_array($files['review_media'])
+            ? $files['review_media']
+            : null;
+
         if (
-            ! empty($_FILES['review_media'])
-            && is_array($_FILES['review_media'])
-            && isset($_FILES['review_media']['name'])
-            && is_array($_FILES['review_media']['name'])
+            $upload === null
+            || ! isset($upload['name'])
+            || ! is_array($upload['name'])
         ) {
-            require_once ABSPATH . 'wp-admin/includes/image.php';
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-            require_once ABSPATH . 'wp-admin/includes/media.php';
-
-            foreach (array_keys($_FILES['review_media']['name']) as $key) {
-                $name = isset($_FILES['review_media']['name'][$key])
-                    ? sanitize_file_name(wp_unslash((string) $_FILES['review_media']['name'][$key]))
-                    : '';
-                if ($name === '') {
-                    continue;
-                }
-
-                $error = isset($_FILES['review_media']['error'][$key])
-                    ? absint($_FILES['review_media']['error'][$key])
-                    : UPLOAD_ERR_NO_FILE;
-                if ($error !== UPLOAD_ERR_OK) {
-                    continue;
-                }
-
-                $tmp_name = isset($_FILES['review_media']['tmp_name'][$key])
-                    ? wp_unslash((string) $_FILES['review_media']['tmp_name'][$key])
-                    : '';
-                $size = isset($_FILES['review_media']['size'][$key])
-                    ? absint($_FILES['review_media']['size'][$key])
-                    : 0;
-
-                if ($tmp_name === '' || ! is_uploaded_file($tmp_name)) {
-                    continue;
-                }
-
-                // Early type check via WordPress (extension + file contents), not the client-supplied MIME.
-                $wp_filetype = wp_check_filetype_and_ext($tmp_name, $name);
-                $type        = ! empty($wp_filetype['type']) ? (string) $wp_filetype['type'] : '';
-                if (
-                    $type === ''
-                    || (strpos($type, 'image/') !== 0 && strpos($type, 'video/') !== 0)
-                ) {
-                    continue;
-                }
-
-                // Prefer WordPress-corrected filename when the extension was remapped.
-                if (! empty($wp_filetype['proper_filename'])) {
-                    $name = sanitize_file_name((string) $wp_filetype['proper_filename']);
-                }
-
-                $file = [
-                    'name'     => $name,
-                    'type'     => $type,
-                    'tmp_name' => $tmp_name,
-                    'error'    => $error,
-                    'size'     => $size,
-                ];
-
-                $_FILES['hyoka_single_upload'] = $file;
-                try {
-                    $attachment_id = media_handle_upload('hyoka_single_upload', 0);
-                } finally {
-                    unset($_FILES['hyoka_single_upload']);
-                }
-
-                if (is_wp_error($attachment_id)) {
-                    continue;
-                }
-
-                $mime = get_post_mime_type($attachment_id);
-                if (! is_string($mime) || $mime === '') {
-                    wp_delete_attachment($attachment_id, true);
-                    continue;
-                }
-
-                $is_video = strpos($mime, 'video/') === 0;
-                $is_image = strpos($mime, 'image/') === 0;
-                if (! $is_video && ! $is_image) {
-                    wp_delete_attachment($attachment_id, true);
-                    continue;
-                }
-
-                $url = wp_get_attachment_url($attachment_id);
-                if (! is_string($url) || $url === '') {
-                    wp_delete_attachment($attachment_id, true);
-                    continue;
-                }
-
-                $media_data[] = [
-                    'id'             => absint($attachment_id),
-                    'url'            => esc_url_raw($url),
-                    'type'           => $is_video ? 'video' : 'image',
-                    'attachmentId'   => absint($attachment_id),
-                    'isUserUploaded' => true,
-                ];
-            }
+            return $media_data;
         }
-        // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+
+        foreach (array_keys($upload['name']) as $key) {
+            $name = isset($upload['name'][$key])
+                ? sanitize_file_name(wp_unslash((string) $upload['name'][$key]))
+                : '';
+            if ($name === '') {
+                continue;
+            }
+
+            $error = isset($upload['error'][$key])
+                ? absint($upload['error'][$key])
+                : UPLOAD_ERR_NO_FILE;
+            if ($error !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is a PHP upload path; validated via is_uploaded_file() / wp_check_filetype_and_ext() below.
+            $tmp_name = isset($upload['tmp_name'][$key])
+                ? wp_unslash((string) $upload['tmp_name'][$key])
+                : '';
+            $size = isset($upload['size'][$key])
+                ? absint($upload['size'][$key])
+                : 0;
+
+            if ($tmp_name === '' || ! is_uploaded_file($tmp_name)) {
+                continue;
+            }
+
+            // Early type check via WordPress (extension + file contents), not the client-supplied MIME.
+            $wp_filetype = wp_check_filetype_and_ext($tmp_name, $name);
+            $type        = ! empty($wp_filetype['type']) ? (string) $wp_filetype['type'] : '';
+            if (
+                $type === ''
+                || (strpos($type, 'image/') !== 0 && strpos($type, 'video/') !== 0)
+            ) {
+                continue;
+            }
+
+            // Prefer WordPress-corrected filename when the extension was remapped.
+            if (! empty($wp_filetype['proper_filename'])) {
+                $name = sanitize_file_name((string) $wp_filetype['proper_filename']);
+            }
+
+            $file = [
+                'name'     => $name,
+                'type'     => $type,
+                'tmp_name' => $tmp_name,
+                'error'    => $error,
+                'size'     => $size,
+            ];
+
+            // media_handle_upload() requires a $_FILES entry; scoped and cleaned up immediately.
+            $_FILES['hyoka_single_upload'] = $file;
+            try {
+                $attachment_id = media_handle_upload('hyoka_single_upload', 0);
+            } finally {
+                unset($_FILES['hyoka_single_upload']);
+            }
+
+            if (is_wp_error($attachment_id)) {
+                continue;
+            }
+
+            $mime = get_post_mime_type($attachment_id);
+            if (! is_string($mime) || $mime === '') {
+                wp_delete_attachment($attachment_id, true);
+                continue;
+            }
+
+            $is_video = strpos($mime, 'video/') === 0;
+            $is_image = strpos($mime, 'image/') === 0;
+            if (! $is_video && ! $is_image) {
+                wp_delete_attachment($attachment_id, true);
+                continue;
+            }
+
+            $url = wp_get_attachment_url($attachment_id);
+            if (! is_string($url) || $url === '') {
+                wp_delete_attachment($attachment_id, true);
+                continue;
+            }
+
+            $media_data[] = [
+                'id'             => absint($attachment_id),
+                'url'            => esc_url_raw($url),
+                'type'           => $is_video ? 'video' : 'image',
+                'attachmentId'   => absint($attachment_id),
+                'isUserUploaded' => true,
+            ];
+        }
 
         return $media_data;
     }

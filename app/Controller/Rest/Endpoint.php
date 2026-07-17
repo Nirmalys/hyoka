@@ -12,6 +12,7 @@
 namespace Hyoka\App\Controller\Rest;
 
 use Hyoka\App\Helper\UserReplies;
+use Hyoka\App\Helper\Wp;
 use Hyoka\App\Model\Reviewing;
 
 defined('ABSPATH') || exit;
@@ -49,12 +50,19 @@ class Endpoint
 
         $action = isset($params['action']) ? sanitize_key((string) $params['action']) : '';
 
+        // Fail closed for mutating actions: verify CSRF before any handler runs.
+        // Do not nest business logic inside the nonce success branch in a way that
+        // leaves a fall-through path without verification.
         if (in_array($action, self::CSRF_ACTIONS, true)) {
             $nonce_check = self::verifyRestNonce($request);
             if (is_wp_error($nonce_check)) {
                 return $nonce_check;
             }
         }
+
+        // Bind JSON params after CSRF for writes (and for reads that pass params).
+        // Helpers like Wp::post* / Meta media_json fall back to this bag only.
+        Wp::setRequest($params);
 
         switch ($action) {
             case 'fetch_product_widgets':
@@ -84,6 +92,10 @@ class Endpoint
     /**
      * CSRF check for mutating REST actions (fail closed — no bypass path).
      *
+     * Checks are intentionally separate (empty vs invalid) rather than a single
+     * `$nonce === '' || ! wp_verify_nonce(...)` expression so the failure path
+     * is obvious and never continues into mutating handlers without a verified nonce.
+     *
      * @return true|\WP_Error
      */
     private static function verifyRestNonce(\WP_REST_Request $request)
@@ -92,6 +104,7 @@ class Endpoint
             wp_unslash((string) $request->get_header('x-wp-nonce'))
         );
 
+        // Missing token — reject before calling wp_verify_nonce().
         if ($nonce === '') {
             return new \WP_Error(
                 'missing_nonce',
@@ -100,6 +113,7 @@ class Endpoint
             );
         }
 
+        // Invalid / expired token — reject; do not proceed to handlers.
         if (! wp_verify_nonce($nonce, 'wp_rest')) {
             return new \WP_Error(
                 'invalid_nonce',

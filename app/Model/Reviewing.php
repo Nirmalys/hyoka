@@ -641,11 +641,10 @@ class Reviewing
 
     public static function getWidgetSettingsFromPost(): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Verified in Ajax::handleUpdateWidgetSettings().
-        $widget_id = '';
-        if (isset($_POST['widget_id']) && is_scalar($_POST['widget_id'])) {
-            $widget_id = sanitize_key(sanitize_text_field(wp_unslash((string) $_POST['widget_id'])));
-        } elseif (isset($_REQUEST['widget_id']) && is_scalar($_REQUEST['widget_id'])) {
+        // Request bag is bound in Ajax::verifyNonce() after check_ajax_referer().
+        $widget_id = Wp::postKey('widget_id');
+        if ($widget_id === '' && isset($_REQUEST['widget_id']) && is_scalar($_REQUEST['widget_id'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postKey().
             $widget_id = sanitize_key(sanitize_text_field(wp_unslash((string) $_REQUEST['widget_id'])));
         }
 
@@ -654,6 +653,7 @@ class Reviewing
             // Accept 1/0 (admin UI) and true/false strings (older bundles / FormData).
             $enabled = Wp::postBoolean('enabled', false);
         } elseif (isset($_REQUEST['enabled']) && is_scalar($_REQUEST['enabled'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postBoolean().
             $enabled = Wp::sanitizeBooleanInput(
                 sanitize_text_field(wp_unslash((string) $_REQUEST['enabled'])),
                 false
@@ -661,12 +661,12 @@ class Reviewing
         }
 
         $placement = null;
-        if (isset($_POST['placement']) && is_scalar($_POST['placement'])) {
-            $placement = sanitize_text_field(wp_unslash((string) $_POST['placement']));
+        if (Wp::hasPost('placement')) {
+            $placement = Wp::postText('placement');
         } elseif (isset($_REQUEST['placement']) && is_scalar($_REQUEST['placement'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Fallback only; primary path uses nonce-bound Wp::postText().
             $placement = sanitize_text_field(wp_unslash((string) $_REQUEST['placement']));
         }
-        // phpcs:enable
 
         return [
             'widget_id' => $widget_id,
@@ -787,7 +787,7 @@ class Reviewing
      */
     public static function getReviewsForAdmin(): array
     {
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified in Ajax::handleFetchReviews().
+        // Reads from Wp request bag bound in Ajax::verifyNonce() after check_ajax_referer().
         $settings           = EmailSender::getSettings();
         $default_per_page   = max(1, min(100, (int) ($settings['reviews_per_page'] ?? 10)));
         $requested_per_page = Wp::postInt('per_page');
@@ -810,7 +810,6 @@ class Reviewing
             'orderby'  => Wp::postKey('orderby', 'created_at'),
             'order'    => Wp::postText('order', 'DESC'),
         ];
-        // phpcs:enable
 
         $review_model = new Review();
         if ($view === 'customer_replies') {

@@ -170,7 +170,7 @@ class Customers
     }
 
     /**
-     * @param array<string, mixed> $row Raw DB row from hka_customers.
+     * @param array<string, mixed> $row Raw DB row from hyoka_customer.
      * @return array<string, mixed>
      */
     public static function formatCustomerRow(array $row): array

@@ -129,9 +129,16 @@ class Endpoint
         try {
             $result = \Hyoka\Woocommerce\Product\ProductReview::submitReview($params);
         } catch (\Throwable $e) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Log unexpected failures for admins without exposing details to clients when WP_DEBUG is off.
+            error_log($e->__toString());
+
             $result = [
                 'ok'      => false,
-                'message' => $e->getMessage(),
+                'message' => (
+                    defined('WP_DEBUG') && WP_DEBUG
+                        ? $e->getMessage()
+                        : __('An unexpected error occurred. Please try again.', 'hyoka')
+                ),
             ];
         }
 

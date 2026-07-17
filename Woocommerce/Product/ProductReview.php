@@ -710,6 +710,7 @@ class ProductReview
             return '';
         }
 
+        // phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- Template variables are plugin-controlled and extracted with EXTR_SKIP before including an internal Widgets/ template only.
         extract($args, EXTR_SKIP);
         ob_start();
         include $template_path;

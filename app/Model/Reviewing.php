@@ -1001,7 +1001,7 @@ class Reviewing
     // —— Row shaping for admin / frontend ——
 
     /**
-     * JSON for hka_reviews.content (omits title when empty).
+     * JSON for hyoka_reviews.content (omits title when empty).
      *
      * @param array{text?: string, title?: string, author?: string} $parts
      */
@@ -1283,7 +1283,7 @@ class Reviewing
     }
 
     /**
-     * Resolve widget/email source from hka_customer.review snapshots.
+     * Resolve widget/email source from hyoka_customer.review snapshots.
      *
      * @param array<int, int> $review_ids
      * @return array<int, string>

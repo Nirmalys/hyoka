@@ -168,7 +168,7 @@ class Assets
         wp_enqueue_script(
             self::HANDLE_REACT_APP,
             self::url('admin-ui/dist/' . $bundle_file),
-            [],
+            ['wp-element'],
             HYOKA_VERSION,
             true
         );

@@ -21,7 +21,7 @@ defined('ABSPATH') || exit;
 
 class EmailSender
 {
-    /** Legacy WordPress option name (migrated into hka_reviews plugin_settings row). */
+    /** Legacy WordPress option name (migrated into hyoka_reviews plugin_settings row). */
     public const SETTINGS_OPTION = 'hyoka_email_followup_settings';
 
     public const CRON_HOOK = 'hyoka_followup_email_cron';

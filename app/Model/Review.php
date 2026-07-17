@@ -631,7 +631,7 @@ class Review
         ];
     }
 
-    // —— Plugin settings row (hka_reviews.email = plugin_settings) ——
+    // —— Plugin settings row (hyoka_reviews.email = plugin_settings) ——
 
     /**
      * @return array<string, mixed>

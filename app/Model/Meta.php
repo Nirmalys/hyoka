@@ -100,7 +100,7 @@ class Meta
     }
 
     /**
-     * Merge partial email metadata into hka_customer.email for one row.
+     * Merge partial email metadata into hyoka_customer.email for one row.
      *
      * @param array<string, mixed> $patch
      */
@@ -134,7 +134,7 @@ class Meta
     }
 
     /**
-     * Decode hka_customer.invite JSON: token_hash, expires_at, consumed_at.
+     * Decode hyoka_customer.invite JSON: token_hash, expires_at, consumed_at.
      *
      * @return array{token_hash: string, expires_at: string, consumed_at: string, invite_plain: string}
      */

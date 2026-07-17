@@ -74,8 +74,17 @@ class SubmissionFormRender
             $submit_label = __('Submit Review', 'hyoka');
         }
 
-        $flags = self::getFormVisibilityFlags($settings, $accept_media);
-        extract($flags, EXTR_SKIP);
+        [
+            'show_name'      => $show_name,
+            'show_email'     => $show_email,
+            'show_location'  => $show_location,
+            'show_title'     => $show_title,
+            'show_review'    => $show_review,
+            'show_rating'    => $show_rating,
+            'photos_enabled' => $photos_enabled,
+            'videos_enabled' => $videos_enabled,
+            'rating_value'   => $rating_value,
+        ] = self::getFormVisibilityFlags($settings, $accept_media);
 
         ob_start();
         ?>
@@ -192,8 +201,17 @@ class SubmissionFormRender
             $submit_label = __('Submit Review', 'hyoka');
         }
 
-        $flags = self::getFormVisibilityFlags($settings);
-        extract($flags, EXTR_SKIP);
+        [
+            'show_name'      => $show_name,
+            'show_email'     => $show_email,
+            'show_location'  => $show_location,
+            'show_title'     => $show_title,
+            'show_review'    => $show_review,
+            'show_rating'    => $show_rating,
+            'photos_enabled' => $photos_enabled,
+            'videos_enabled' => $videos_enabled,
+            'rating_value'   => $rating_value,
+        ] = self::getFormVisibilityFlags($settings);
 
         $customer_name  = (string) ($customer['name'] ?? '');
         $customer_email = (string) ($customer['email'] ?? '');

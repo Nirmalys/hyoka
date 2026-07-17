@@ -151,8 +151,9 @@ class Wp
     }
 
     /**
-     * Plugin-owned table suffixes. Prefer getTableName() / %i in $wpdb->prepare()
-     * for these identifiers (WordPress 6.2+). Core tables may stay as $wpdb->posts, etc.
+     * Plugin-owned table suffixes. Prefer Model::getTableName() interpolated into
+     * prepare() SQL with scoped PHPCS suppressions (Plugin Check does not treat
+     * escapeTableName() as a trusted sanitizer). Core tables may stay as $wpdb->posts, etc.
      */
     public const TABLE_REVIEWS  = 'hyoka_reviews';
 
@@ -161,8 +162,18 @@ class Wp
     public const TABLE_IMPORT   = 'hyoka_import';
 
     /**
+     * Escape a plugin table name for safe interpolation into $wpdb->prepare() SQL.
+     * Only pass trusted identifiers from getTableName() — never user input.
+     * Prefer getTableName() + scoped PHPCS suppressions for Plugin Check compatibility.
+     */
+    public static function escapeTableName(string $table): string
+    {
+        return esc_sql($table);
+    }
+
+    /**
      * Escaped backticked table identifier for rare non-prepare SQL only.
-     * Prefer %i with getTableName() inside prepare() query strings.
+     * Prefer getTableName() + "FROM {$table}" inside prepare() query strings.
      */
     public static function sqlTable(string $which): string
     {
@@ -177,7 +188,7 @@ class Wp
         $which = sanitize_key($which);
         $name  = $map[$which] ?? $map['reviews'];
 
-        return '`' . esc_sql($name) . '`';
+        return '`' . self::escapeTableName($name) . '`';
     }
 
     /**

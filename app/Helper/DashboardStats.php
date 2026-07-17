@@ -103,17 +103,17 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND rating BETWEEN 1 AND 5
                 AND created_at >= %s
-                AND created_at < %s',
-                Review::getTableName(),
+                AND created_at < %s",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -121,6 +121,7 @@ class DashboardStats
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }
@@ -129,17 +130,17 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $avg = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT AVG(rating) FROM %i
+                "SELECT AVG(rating) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND rating BETWEEN 1 AND 5
                 AND created_at >= %s
-                AND created_at < %s',
-                Review::getTableName(),
+                AND created_at < %s",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -147,6 +148,7 @@ class DashboardStats
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return $avg !== null ? round((float) $avg, 1) : 0.0;
     }
@@ -155,11 +157,12 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND rating BETWEEN 1 AND 5
@@ -167,8 +170,7 @@ class DashboardStats
                 AND media <> %s
                 AND media <> %s
                 AND created_at >= %s
-                AND created_at < %s',
-                Review::getTableName(),
+                AND created_at < %s",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -178,6 +180,7 @@ class DashboardStats
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }
@@ -186,18 +189,18 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND rating BETWEEN 1 AND 5
                 AND media IS NOT NULL
                 AND media <> %s
-                AND media <> %s',
-                Review::getTableName(),
+                AND media <> %s",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -205,6 +208,7 @@ class DashboardStats
                 '[]'
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }
@@ -213,19 +217,20 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
-                AND email NOT IN (%s, %s)',
-                Review::getTableName(),
+                AND email NOT IN (%s, %s)",
                 'pending',
                 $emails[0],
                 $emails[1]
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }
@@ -234,16 +239,16 @@ class DashboardStats
     {
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND created_at >= %s
-                AND created_at < %s',
-                Review::getTableName(),
+                AND created_at < %s",
                 'pending',
                 $emails[0],
                 $emails[1],
@@ -251,6 +256,7 @@ class DashboardStats
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }
@@ -258,20 +264,21 @@ class DashboardStats
     private static function countRequestsSent(string $start, string $end): int
     {
         global $wpdb;
+        $table = Customer::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE email LIKE %s
-                AND JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')) >= %s
-                AND JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')) < %s',
-                Customer::getTableName(),
+                AND JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')) >= %s
+                AND JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')) < %s",
                 '%"email_sent":1%',
                 $start,
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) ($count ?? 0);
     }
@@ -361,21 +368,22 @@ class DashboardStats
 
         global $wpdb;
         $emails         = Review::systemEmails();
+        $reviews_table  = Review::getTableName();
+        $customer_table = Customer::getTableName();
 
         // Live dashboard series for custom tables; caching would stale chart data.
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from getTableName() ($wpdb->prefix + plugin-owned tables); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $review_rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT DATE(created_at) AS day, COUNT(*) AS cnt
-                FROM %i
+                "SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+                FROM {$reviews_table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND rating BETWEEN 1 AND 5
                 AND created_at >= %s
                 AND created_at < %s
                 GROUP BY DATE(created_at)
-                ORDER BY day ASC',
-                Review::getTableName(),
+                ORDER BY day ASC",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -387,21 +395,20 @@ class DashboardStats
 
         $request_rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT DATE(JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\'))) AS day, COUNT(*) AS cnt
-                FROM %i
+                "SELECT DATE(JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at'))) AS day, COUNT(*) AS cnt
+                FROM {$customer_table}
                 WHERE email LIKE %s
-                AND JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')) >= %s
-                AND JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')) < %s
-                GROUP BY DATE(JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')))
-                ORDER BY day ASC',
-                Customer::getTableName(),
+                AND JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')) >= %s
+                AND JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')) < %s
+                GROUP BY DATE(JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')))
+                ORDER BY day ASC",
                 '%"email_sent":1%',
                 $start,
                 $end
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         $period_start_ts = strtotime($start . ' UTC');
         if (is_array($review_rows)) {
@@ -538,20 +545,20 @@ class DashboardStats
 
         global $wpdb;
         $emails = Review::systemEmails();
+        $table  = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT product_id, COUNT(*) AS review_count, AVG(rating) AS avg_rating
-                FROM %i
+                "SELECT product_id, COUNT(*) AS review_count, AVG(rating) AS avg_rating
+                FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND product_id > 0
                 AND rating BETWEEN 1 AND 5
                 GROUP BY product_id
                 ORDER BY review_count DESC, avg_rating DESC
-                LIMIT %d',
-                Review::getTableName(),
+                LIMIT %d",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -559,6 +566,7 @@ class DashboardStats
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (! is_array($rows) || $rows === []) {
             return [];
@@ -606,25 +614,26 @@ class DashboardStats
         global $wpdb;
         $emails = Review::systemEmails();
         $fetch_limit = max(1, min(100, $fetch_limit));
+        $table = Review::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT id, product_id, rating, content, media, question, reply, created_at, updated_at
-                FROM %i
+                "SELECT id, product_id, rating, content, media, question, reply, created_at, updated_at
+                FROM {$table}
                 WHERE email NOT IN (%s, %s)
                 ORDER BY GREATEST(
                     COALESCE(UNIX_TIMESTAMP(updated_at), 0),
                     COALESCE(UNIX_TIMESTAMP(created_at), 0)
                 ) DESC
-                LIMIT %d',
-                Review::getTableName(),
+                LIMIT %d",
                 $emails[0],
                 $emails[1],
                 $fetch_limit
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (! is_array($rows) || $rows === []) {
             return [];
@@ -724,25 +733,26 @@ class DashboardStats
     {
         global $wpdb;
         $fetch_limit = max(1, min(50, $fetch_limit));
+        $table = ImportRecord::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT import_job_id, source, COUNT(*) AS review_count, MAX(created_at) AS imported_at
-                FROM %i
+                "SELECT import_job_id, source, COUNT(*) AS review_count, MAX(created_at) AS imported_at
+                FROM {$table}
                 WHERE import_job_id IS NOT NULL
                 AND import_job_id <> %s
                 AND batch_status = %s
                 GROUP BY import_job_id, source
                 ORDER BY imported_at DESC
-                LIMIT %d',
-                ImportRecord::getTableName(),
+                LIMIT %d",
                 '',
                 'imported',
                 $fetch_limit
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (! is_array($rows) || $rows === []) {
             return [];
@@ -786,25 +796,26 @@ class DashboardStats
     {
         global $wpdb;
         $fetch_limit = max(1, min(50, $fetch_limit));
+        $table = Customer::getTableName();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT
-                    DATE_FORMAT(JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\')), \'%%Y-%%m-%%d %%H:00:00\') AS batch_hour,
+                "SELECT
+                    DATE_FORMAT(JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at')), '%%Y-%%m-%%d %%H:00:00') AS batch_hour,
                     COUNT(*) AS customer_count,
-                    MAX(JSON_UNQUOTE(JSON_EXTRACT(email, \'$.email_sent_at\'))) AS last_sent_at
-                FROM %i
+                    MAX(JSON_UNQUOTE(JSON_EXTRACT(email, '$.email_sent_at'))) AS last_sent_at
+                FROM {$table}
                 WHERE email LIKE %s
                 GROUP BY batch_hour
                 ORDER BY last_sent_at DESC
-                LIMIT %d',
-                Customer::getTableName(),
+                LIMIT %d",
                 '%"email_sent":1%',
                 $fetch_limit
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (! is_array($rows) || $rows === []) {
             return [];
@@ -848,17 +859,17 @@ class DashboardStats
         }
         $emails = Review::systemEmails();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = Review::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i
+                "SELECT COUNT(*) FROM {$table}
                 WHERE status = %s
                 AND email NOT IN (%s, %s)
                 AND product_id = %d
                 AND rating BETWEEN 1 AND 5
                 AND created_at >= %s
-                AND created_at < %s',
-                Review::getTableName(),
+                AND created_at < %s",
                 'approved',
                 $emails[0],
                 $emails[1],
@@ -867,6 +878,7 @@ class DashboardStats
                 $end
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $count;
     }

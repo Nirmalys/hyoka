@@ -70,7 +70,7 @@ class Review
             $data['updated_at'] = $now;
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct $wpdb->insert() into the plugin-owned custom table; no WordPress API equivalent.
         $result = $wpdb->insert($this->hyoka_reviews_table, $data, $this->columnFormats($data));
         if ($result === false) {
             return false;
@@ -83,15 +83,16 @@ class Review
     {
         global $wpdb;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $row = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT * FROM %i WHERE id = %d',
-                $this->hyoka_reviews_table,
+                "SELECT * FROM {$table} WHERE id = %d",
                 absint($id)
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($row) ? $row : null;
     }
@@ -103,16 +104,17 @@ class Review
     {
         global $wpdb;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $row = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT * FROM %i WHERE product_id = %d AND email = %s',
-                $this->hyoka_reviews_table,
+                "SELECT * FROM {$table} WHERE product_id = %d AND email = %s",
                 0,
                 $email_key
             ),
             ARRAY_A
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($row) ? $row : null;
     }
@@ -161,12 +163,12 @@ class Review
         global $wpdb;
 
         $parts = $this->buildWhereParts($args);
-        $query = 'SELECT COUNT(*) FROM %i WHERE ' . $parts['where'];
+        $table = self::getTableName();
+        $query = "SELECT COUNT(*) FROM {$table} WHERE " . $parts['where'];
 
-        // WHERE fragments are plugin-built placeholders; values bound via prepare().
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
-        $count = (int) $wpdb->get_var($wpdb->prepare($query, $this->hyoka_reviews_table, ...$parts['params']));
-        // phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); WHERE/ORDER fragments are plugin-controlled placeholders; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
+        $count = (int) $wpdb->get_var($wpdb->prepare($query, ...$parts['params']));
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         return $count;
     }
@@ -175,14 +177,13 @@ class Review
     {
         global $wpdb;
         $emails = self::systemEmails();
+        $table  = self::getTableName();
 
-        // Variadic ...array_merge() is safe; WordPressCS cannot count dynamic replacements.
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); system emails and fixed scope params are bound via $wpdb->prepare(); variadic replacements are safe (PHPCS cannot count them); custom tables require direct database queries.
         if ($view === 'questions') {
             $results = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT status, COUNT(*) as count FROM %i WHERE email NOT IN (%s, %s) AND question != %s AND (reply IS NULL OR reply = %s) GROUP BY status',
-                    $this->hyoka_reviews_table,
+                    "SELECT status, COUNT(*) as count FROM {$table} WHERE email NOT IN (%s, %s) AND question != %s AND (reply IS NULL OR reply = %s) GROUP BY status",
                     $emails[0],
                     $emails[1],
                     '',
@@ -193,8 +194,7 @@ class Review
         } elseif ($view === 'store_reviews') {
             $results = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT status, COUNT(*) as count FROM %i WHERE email NOT IN (%s, %s) AND (COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) GROUP BY status',
-                    $this->hyoka_reviews_table,
+                    "SELECT status, COUNT(*) as count FROM {$table} WHERE email NOT IN (%s, %s) AND (COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) GROUP BY status",
                     ...array_merge($emails, self::SQL_STORE_REVIEWS_PARAMS)
                 ),
                 ARRAY_A
@@ -202,8 +202,7 @@ class Review
         } elseif ($view === 'replies') {
             $results = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT status, COUNT(*) as count FROM %i WHERE email NOT IN (%s, %s) AND reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s) GROUP BY status',
-                    $this->hyoka_reviews_table,
+                    "SELECT status, COUNT(*) as count FROM {$table} WHERE email NOT IN (%s, %s) AND reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s) GROUP BY status",
                     ...array_merge($emails, self::storeRepliesScopeParams())
                 ),
                 ARRAY_A
@@ -211,8 +210,7 @@ class Review
         } else {
             $results = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT status, COUNT(*) as count FROM %i WHERE email NOT IN (%s, %s) AND product_id > %d AND (question IS NULL OR question = %s) GROUP BY status',
-                    $this->hyoka_reviews_table,
+                    "SELECT status, COUNT(*) as count FROM {$table} WHERE email NOT IN (%s, %s) AND product_id > %d AND (question IS NULL OR question = %s) GROUP BY status",
                     ...array_merge($emails, self::SQL_PRODUCT_REVIEWS_PARAMS)
                 ),
                 ARRAY_A
@@ -228,8 +226,7 @@ class Review
             'ProductReviews' => 0,
             'Questions'      => (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM %i WHERE email NOT IN (%s, %s) AND question != %s AND (reply IS NULL OR reply = %s)',
-                    $this->hyoka_reviews_table,
+                    "SELECT COUNT(*) FROM {$table} WHERE email NOT IN (%s, %s) AND question != %s AND (reply IS NULL OR reply = %s)",
                     $emails[0],
                     $emails[1],
                     '',
@@ -238,20 +235,18 @@ class Review
             ),
             'StoreReviews'   => (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM %i WHERE email NOT IN (%s, %s) AND (COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))',
-                    $this->hyoka_reviews_table,
+                    "SELECT COUNT(*) FROM {$table} WHERE email NOT IN (%s, %s) AND (COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))",
                     ...array_merge($emails, self::SQL_STORE_REVIEWS_PARAMS)
                 )
             ),
             'StoreReplies'   => (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM %i WHERE email NOT IN (%s, %s) AND reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)',
-                    $this->hyoka_reviews_table,
+                    "SELECT COUNT(*) FROM {$table} WHERE email NOT IN (%s, %s) AND reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)",
                     ...array_merge($emails, self::storeRepliesScopeParams())
                 )
             ),
         ];
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         $total = 0;
         if (is_array($results)) {
@@ -338,21 +333,20 @@ class Review
         $orderby     = $allowed_orderby[$orderby_key] ?? 'created_at';
         $order       = strtoupper((string) $args['order']) === 'ASC' ? 'ASC' : 'DESC';
 
-        $query = 'SELECT * FROM %i WHERE ' . $parts['where']
+        $table = self::getTableName();
+        $query = "SELECT * FROM {$table} WHERE " . $parts['where']
             . ' ORDER BY ' . $orderby . ' ' . $order
             . ' LIMIT %d OFFSET %d';
 
-        // WHERE/ORDER BY are plugin-controlled (allowlisted); values bound via prepare().
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); WHERE/ORDER fragments are plugin-controlled placeholders; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $rows = $wpdb->get_results(
             $wpdb->prepare(
                 $query,
-                $this->hyoka_reviews_table,
                 ...array_merge($parts['params'], [$per_page, $offset])
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 
         return is_array($rows) ? $rows : [];
     }
@@ -360,14 +354,15 @@ class Review
     public function incrementLikes(int $id): bool
     {
         global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $result = $wpdb->query(
             $wpdb->prepare(
-                'UPDATE %i SET likes = COALESCE(likes, 0) + 1 WHERE id = %d',
-                $this->hyoka_reviews_table,
+                "UPDATE {$table} SET likes = COALESCE(likes, 0) + 1 WHERE id = %d",
                 absint($id)
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return $result !== false && (int) $result > 0;
     }
@@ -937,7 +932,7 @@ class Review
 
         $system_emails = self::systemEmails();
         $where         = 'status = %s AND email NOT IN (%s, %s) AND rating BETWEEN 1 AND 5';
-        $params        = array_merge([$table, $status], $system_emails);
+        $params        = array_merge([$status], $system_emails);
 
         if ($use_multi) {
             $placeholders = implode(',', array_fill(0, count($related), '%d'));
@@ -953,23 +948,22 @@ class Review
             $params  = array_merge($params, self::SQL_PRODUCT_REVIEWS_PARAMS);
         }
 
-        // Dynamic IN (%d,...) and ...$params are prepared correctly; WordPressCS cannot verify placeholder counts.
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); dynamic $where placeholders are assembled from plugin-controlled fragments; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $aggregate = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT AVG(rating) as average, COUNT(*) as count FROM %i WHERE ' . $where,
+                "SELECT AVG(rating) as average, COUNT(*) as count FROM {$table} WHERE " . $where,
                 ...$params
             ),
             ARRAY_A
         );
         $histogram_rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT rating, COUNT(*) as count FROM %i WHERE ' . $where . ' GROUP BY rating',
+                "SELECT rating, COUNT(*) as count FROM {$table} WHERE " . $where . ' GROUP BY rating',
                 ...$params
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
         $histogram = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
         if (is_array($histogram_rows)) {

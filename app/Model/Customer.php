@@ -34,6 +34,7 @@ class Customer
         return $wpdb->prefix . 'hyoka_customer';
     }
 
+
     /**
      * $wpdb format strings for known customer columns.
      * Keep $int_cols in sync when adding integer columns to the customer schema.
@@ -143,17 +144,17 @@ class Customer
     {
         global $wpdb;
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Column list is a class constant; values are prepared.
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         if ($search !== '') {
             $like = '%' . $wpdb->esc_like($search) . '%';
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT ' . self::CUSTOMER_COLUMNS . '
-                 FROM %i
+                    'SELECT ' . self::CUSTOMER_COLUMNS . "
+                 FROM {$table}
                  WHERE (customer LIKE %s OR product LIKE %s OR order_id LIKE %s)
                  ORDER BY purchase_date DESC, id DESC
-                 LIMIT %d OFFSET %d',
-                    self::getTableName(),
+                 LIMIT %d OFFSET %d",
                     $like,
                     $like,
                     $like,
@@ -165,19 +166,17 @@ class Customer
         } else {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT ' . self::CUSTOMER_COLUMNS . '
-                 FROM %i
-                 WHERE 1=1
+                    'SELECT ' . self::CUSTOMER_COLUMNS . "
+                 FROM {$table}
                  ORDER BY purchase_date DESC, id DESC
-                 LIMIT %d OFFSET %d',
-                    self::getTableName(),
+                 LIMIT %d OFFSET %d",
                     $limit,
                     $offset
                 ),
                 ARRAY_A
             );
         }
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($rows) ? Meta::hydrateRowsWithEmail($rows) : [];
     }
@@ -220,13 +219,13 @@ class Customer
             return false;
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- SQL values are bound via $wpdb->prepare(); $table is a plugin-owned table name from getTableName(); no WordPress API exists for these custom-table writes.
         $result = $wpdb->query(
             $wpdb->prepare(
-                'INSERT IGNORE INTO %i
+                "INSERT IGNORE INTO {$table}
                 (order_id, product_id, product, customer, purchase_date, created_at)
-             VALUES (%d, %d, %s, %s, %s, %s)',
-                self::getTableName(),
+             VALUES (%d, %d, %s, %s, %s, %s)",
                 $order_id,
                 $product_id,
                 $product_json,
@@ -235,6 +234,7 @@ class Customer
                 $now
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return $result !== false;
     }
@@ -301,7 +301,7 @@ class Customer
             'updated_at'     => $now,
         ];
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct $wpdb->insert() into the plugin-owned custom table; no WordPress API equivalent.
         $inserted = $wpdb->insert(
             self::getTableName(),
             $data,
@@ -329,17 +329,17 @@ class Customer
         $last_id = 0;
         $batch = max(100, $limit * 4);
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is generated by getTableName() using $wpdb->prefix and a fixed plugin table name; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         while (count($results) < $limit) {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT id, order_id, product_id, product, customer, purchase_date, email, review
-                 FROM %i
+                    "SELECT id, order_id, product_id, product, customer, purchase_date, email, review
+                 FROM {$table}
                  WHERE id > %d
                    AND purchase_date <= DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d DAY)
                  ORDER BY id ASC
-                 LIMIT %d',
-                    self::getTableName(),
+                 LIMIT %d",
                     $last_id,
                     $days_after,
                     $batch
@@ -378,7 +378,7 @@ class Customer
                 break;
             }
         }
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return $results;
     }
@@ -411,16 +411,17 @@ class Customer
         }
 
         global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = Review::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         $found = $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT id FROM %i WHERE product_id = %d AND email = %s AND email != %s LIMIT 1',
-                Review::getTableName(),
+                "SELECT id FROM {$table} WHERE product_id = %d AND email = %s AND email != %s LIMIT 1",
                 $product_id,
                 $email,
                 'widget_settings'
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return (int) $found > 0;
     }
@@ -439,16 +440,16 @@ class Customer
         $last_id = 0;
         $batch   = max(100, $limit * 4);
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         while (count($results) < $limit) {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT id, order_id, product_id, product, customer, purchase_date, email, review
-                 FROM %i
+                    "SELECT id, order_id, product_id, product, customer, purchase_date, email, review
+                 FROM {$table}
                  WHERE id > %d
                  ORDER BY id ASC
-                 LIMIT %d',
-                    self::getTableName(),
+                 LIMIT %d",
                     $last_id,
                     $batch
                 ),
@@ -497,7 +498,7 @@ class Customer
                 break;
             }
         }
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return $results;
     }
@@ -512,19 +513,19 @@ class Customer
         }
         global $wpdb;
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Column list is a class constant; values are prepared.
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         $row = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT ' . self::CUSTOMER_COLUMNS . '
-             FROM %i
+                'SELECT ' . self::CUSTOMER_COLUMNS . "
+             FROM {$table}
              WHERE id = %d
-             LIMIT 1',
-                self::getTableName(),
+             LIMIT 1",
                 $id
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($row) ? Meta::hydrateRowWithEmail($row) : null;
     }
@@ -539,19 +540,19 @@ class Customer
         }
         global $wpdb;
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Column list is a class constant; values are prepared.
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT ' . self::CUSTOMER_COLUMNS . '
-             FROM %i
+                'SELECT ' . self::CUSTOMER_COLUMNS . "
+             FROM {$table}
              WHERE product_id = %d
-             ORDER BY id DESC',
-                self::getTableName(),
+             ORDER BY id DESC",
                 $product_id
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($rows) ? Meta::hydrateRowsWithEmail($rows) : [];
     }
@@ -599,7 +600,7 @@ class Customer
         global $wpdb;
         $now = current_time('mysql', true);
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct $wpdb->update() on the plugin-owned custom table; no WordPress API equivalent.
         $result = $wpdb->update(
             self::getTableName(),
             [
@@ -685,7 +686,7 @@ class Customer
             $data['updated_at'] = current_time('mysql', true);
         }
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct $wpdb->update() on the plugin-owned custom table; no WordPress API equivalent.
         return $wpdb->update(
             self::getTableName(),
             $data,
@@ -729,15 +730,16 @@ class Customer
         global $wpdb;
         $like = '%"email":"' . $wpdb->esc_like($email) . '"%';
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         $rows = $wpdb->get_col(
             $wpdb->prepare(
-                'SELECT id FROM %i WHERE product_id = %d AND customer LIKE %s ORDER BY id DESC LIMIT 50',
-                self::getTableName(),
+                "SELECT id FROM {$table} WHERE product_id = %d AND customer LIKE %s ORDER BY id DESC LIMIT 50",
                 $product_id,
                 $like
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (! is_array($rows)) {
             return [];
@@ -768,15 +770,16 @@ class Customer
         global $wpdb;
         $like = '%"email":"' . $wpdb->esc_like($email) . '"%';
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $table = self::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
         $rows = $wpdb->get_col(
             $wpdb->prepare(
-                'SELECT id FROM %i WHERE customer LIKE %s ORDER BY id DESC LIMIT %d',
-                self::getTableName(),
+                "SELECT id FROM {$table} WHERE customer LIKE %s ORDER BY id DESC LIMIT %d",
                 $like,
                 $limit
             )
         );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if (!is_array($rows)) {
             return [];
@@ -803,25 +806,25 @@ class Customer
         $like          = '%"email":"' . $wpdb->esc_like($email) . '"%';
         $system_emails = Review::systemEmails();
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $customer_table = self::getTableName();
+        $reviews_table  = Review::getTableName();
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from getTableName() ($wpdb->prefix + plugin-owned tables); SQL values parameterized with $wpdb->prepare(); $system_emails are fixed values passed through NOT IN (%s, %s) placeholders; custom tables require direct database queries.
         $orders_count = (int) $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(DISTINCT order_id) FROM %i WHERE customer LIKE %s',
-                self::getTableName(),
+                "SELECT COUNT(DISTINCT order_id) FROM {$customer_table} WHERE customer LIKE %s",
                 $like
             )
         );
 
         $reviews_count = (int) $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM %i WHERE email = %s AND email NOT IN (%s, %s)',
-                Review::getTableName(),
+                "SELECT COUNT(*) FROM {$reviews_table} WHERE email = %s AND email NOT IN (%s, %s)",
                 $email,
                 $system_emails[0],
                 $system_emails[1]
             )
         );
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return [
             'orders_count'  => $orders_count,
@@ -847,17 +850,18 @@ class Customer
 
         global $wpdb;
         $updated = 0;
+        $table   = self::getTableName();
 
         foreach ($ids as $id) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
             $row = $wpdb->get_row(
                 $wpdb->prepare(
-                    'SELECT audit, review FROM %i WHERE id = %d LIMIT 1',
-                    self::getTableName(),
+                    "SELECT audit, review FROM {$table} WHERE id = %d LIMIT 1",
                     $id
                 ),
                 ARRAY_A
             );
+            // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             if (!is_array($row)) {
                 continue;
             }
@@ -925,10 +929,12 @@ class Customer
 
         global $wpdb;
 
-        $all = [];
+        $all   = [];
+        $table = self::getTableName();
         foreach ($ids as $id) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $raw = $wpdb->get_var($wpdb->prepare('SELECT audit FROM %i WHERE id = %d LIMIT 1', self::getTableName(), $id));
+            // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); not user input; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
+            $raw = $wpdb->get_var($wpdb->prepare("SELECT audit FROM {$table} WHERE id = %d LIMIT 1", $id));
+            // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $entries = self::parseAuditJson(is_string($raw) ? $raw : '');
             foreach ($entries as $e) {
                 if (!is_array($e)) {

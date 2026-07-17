@@ -76,17 +76,16 @@ class UserReply
         }
 
         $emails = Review::systemEmails();
-        $table  = Review::getTableName();
+        $table = Review::getTableName();
 
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from Review::getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         if ($columns === 'settings') {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT settings
-                     FROM %i
+                    "SELECT settings
+                     FROM {$table}
                      WHERE email NOT IN (%s, %s)
-                     AND settings LIKE %s',
-                    $table,
+                     AND settings LIKE %s",
                     $emails[0],
                     $emails[1],
                     self::USER_REPLIES_LIKE
@@ -96,11 +95,10 @@ class UserReply
         } else {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT *
-                     FROM %i
+                    "SELECT *
+                     FROM {$table}
                      WHERE email NOT IN (%s, %s)
-                     AND settings LIKE %s',
-                    $table,
+                     AND settings LIKE %s",
                     $emails[0],
                     $emails[1],
                     self::USER_REPLIES_LIKE
@@ -108,7 +106,7 @@ class UserReply
                 ARRAY_A
             );
         }
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         $results = is_array($rows) ? $rows : [];
         wp_cache_set($cache_key, $results, self::CACHE_GROUP, 5 * MINUTE_IN_SECONDS);

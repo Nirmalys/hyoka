@@ -296,7 +296,7 @@ The JavaScript and CSS files under `admin-ui/dist/` (including `bundle.js`, `app
 
 The compiled, human-readable source code for those assets is publicly available at:
 
-https://github.com/Nirmalys/hyoka
+https://github.com/Nirmalys/hyoka/tree/hyoka
 
 In that repository you will find:
 
@@ -323,13 +323,13 @@ React and ReactDOM are externalized at build time and loaded from WordPress core
 
 The full Hyoka source code and build instructions are publicly available at:
 
-https://github.com/Nirmalys/hyoka
+https://github.com/Nirmalys/hyoka/tree/hyoka
 
 To rebuild the compressed admin UI assets from source:
 
-1. Clone the repository:
+1. Clone the repository (hyoka branch):
 
-`git clone https://github.com/Nirmalys/hyoka.git`
+`git clone -b hyoka https://github.com/Nirmalys/hyoka.git`
 
 2. Navigate to the admin UI folder:
 
@@ -398,7 +398,7 @@ No. Hyoka manages reviews, emails, and display widgets separately without alteri
 
 = Where is the human-readable source for the admin JavaScript and CSS? =
 
-The compiled files in `admin-ui/dist/` are built from the public source repository at https://github.com/Nirmalys/hyoka. Build instructions are documented in the Source Code and Development sections of this readme.
+The compiled files in `admin-ui/dist/` are built from the public source repository at https://github.com/Nirmalys/hyoka/tree/hyoka. Build instructions are documented in the Source Code and Development sections of this readme.
 
 == Screenshots ==
 

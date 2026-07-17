@@ -1254,17 +1254,17 @@ class Reviewing
 
         global $wpdb;
         $placeholders = implode(',', array_fill(0, count($review_ids), '%d'));
+        $table        = ImportRecord::getTableName();
 
-        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic IN() placeholders are generated entirely from %d tokens before prepare().
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned table from getTableName(); IN() placeholders are fixed %d tokens built before prepare().
         $results = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT review_id, source FROM %i WHERE review_id IN ($placeholders)",
-                ImportRecord::getTableName(),
+                "SELECT review_id, source FROM {$table} WHERE review_id IN ($placeholders)",
                 ...$review_ids
             ),
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         $sources = [];
         if (! is_array($results)) {
@@ -1306,16 +1306,16 @@ class Reviewing
             $review_ids
         );
         $placeholders = implode(' OR ', array_fill(0, count($likes), 'review LIKE %s'));
+        $table        = Customer::getTableName();
 
-        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic LIKE placeholders are generated entirely from %s tokens before prepare().
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned table from getTableName(); LIKE placeholders are fixed %s tokens built before prepare().
         $rows = $wpdb->get_col(
             $wpdb->prepare(
-                "SELECT review FROM %i WHERE ($placeholders)",
-                Customer::getTableName(),
+                "SELECT review FROM {$table} WHERE ($placeholders)",
                 ...$likes
             )
         );
-        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         if (! is_array($rows)) {
             return $sources;

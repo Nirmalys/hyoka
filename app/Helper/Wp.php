@@ -27,38 +27,27 @@ class Wp
         'times'     => "'Times New Roman', Times, serif",
     ];
 
-    public static function sanitizeHexColor(string $color, string $fallback): string
-    {
-        $color = trim($color);
-        if ($color !== '' && $color[0] !== '#') {
-            if (preg_match('/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $color)) {
-                $color = '#' . $color;
-            }
-        }
-        if (preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $color)) {
-            if (strlen($color) === 4) {
-                $color = sprintf(
-                    '#%s%s%s%s%s%s',
-                    $color[1],
-                    $color[1],
-                    $color[2],
-                    $color[2],
-                    $color[3],
-                    $color[3]
-                );
-            }
-            return strtolower($color);
-        }
-        return $fallback;
-    }
-
+    /**
+     * Allow-list font keys only. Unknown / empty / injected values fall back to system.
+     */
     public static function sanitizeFontKey(string $key): string
     {
         $key = strtolower(preg_replace('/[^a-z]/', '', $key));
-        if ($key === '') {
-            return 'system';
-        }
+
         return array_key_exists($key, self::FONT_STACKS) ? $key : 'system';
+    }
+
+    /**
+     * Return a fixed CSS font-family stack for a (sanitized) key.
+     *
+     * Safe for CSS / style attributes: only FONT_STACKS literals are returned;
+     * callers never interpolate raw user font strings.
+     */
+    public static function fontStackCss(string $key): string
+    {
+        $key = self::sanitizeFontKey($key);
+
+        return self::FONT_STACKS[$key];
     }
 
     /**
@@ -74,13 +63,6 @@ class Wp
             'trebuchet' => 'Trebuchet MS',
             'times'     => 'Times New Roman',
         ];
-    }
-
-    public static function fontStackCss(string $key): string
-    {
-        $key = self::sanitizeFontKey($key);
-
-        return self::FONT_STACKS[$key];
     }
 
     public static function sanitizeTextAlign(string $align): string
@@ -493,6 +475,33 @@ class Wp
             $data['widget_layout'] = 'carousel';
         }
 
+        // Sanitize colors with core sanitize_hex_color() before storage / CSS builders.
+        $color_keys = [
+            'primary_color'         => '#F59E0B',
+            'accent_color'          => '#FDB022',
+            'border_color'          => '#EAECF0',
+            'background_color'      => '#FFFFFF',
+            'text_color'            => '#1D2939',
+            'header_text_color'     => '#1D2939',
+            'card_title_text_color' => '#1D2939',
+            'card_body_text_color'  => '#667085',
+            'star_color'            => '#F59E0B',
+            'button_color'          => '#F59E0B',
+            'button_text_color'     => '#131720',
+        ];
+        foreach ($color_keys as $key => $fallback) {
+            $data[$key] = sanitize_hex_color((string) $data[$key]) ?: $fallback;
+        }
+
+        $data['font_family']         = self::sanitizeFontKey((string) $data['font_family']);
+        $data['header_font_size']    = self::sanitizeCssLength((string) $data['header_font_size'], '24px');
+        $data['card_title_font_size'] = self::sanitizeCssLength((string) $data['card_title_font_size'], '15px');
+        $data['card_body_font_size'] = self::sanitizeCssLength((string) $data['card_body_font_size'], '13px');
+        $data['star_size']           = self::sanitizeCssLength((string) $data['star_size'], '16px');
+        $data['header_font_weight']  = self::sanitizeCssFontWeight((string) $data['header_font_weight'], '700');
+        $data['card_title_font_weight'] = self::sanitizeCssFontWeight((string) $data['card_title_font_weight'], '700');
+        $data['card_body_font_weight']  = self::sanitizeCssFontWeight((string) $data['card_body_font_weight'], '400');
+
         return $data;
     }
 
@@ -548,8 +557,8 @@ class Wp
     private static function widgetStyleValueDiffers(string $key, $value, $default): bool
     {
         if (in_array($key, ['background_color', 'border_color', 'text_color', 'primary_color', 'accent_color', 'header_text_color', 'card_title_text_color', 'card_body_text_color', 'star_color', 'button_color', 'button_text_color'], true)) {
-            $left  = self::sanitizeHexColor((string) $value, (string) $default);
-            $right = self::sanitizeHexColor((string) $default, '#000000');
+            $left  = sanitize_hex_color((string) $value) ?: (sanitize_hex_color((string) $default) ?: '#000000');
+            $right = sanitize_hex_color((string) $default) ?: '#000000';
 
             return strcasecmp($left, $right) !== 0;
         }
@@ -630,17 +639,18 @@ class Wp
             return '';
         }
 
-        $primary     = self::sanitizeHexColor((string) ($style['primary_color'] ?? ''), '#F59E0B');
-        $accent      = self::sanitizeHexColor((string) ($style['accent_color'] ?? ''), '#FDB022');
-        $border      = self::sanitizeHexColor((string) ($style['border_color'] ?? ''), '#EAECF0');
-        $background  = self::sanitizeHexColor((string) ($style['background_color'] ?? ''), '#FFFFFF');
-        $text        = self::sanitizeHexColor((string) ($style['text_color'] ?? ''), '#1D2939');
-        $header_text = self::sanitizeHexColor((string) ($style['header_text_color'] ?? ''), '#1D2939');
-        $title_text  = self::sanitizeHexColor((string) ($style['card_title_text_color'] ?? ''), '#1D2939');
-        $body_text   = self::sanitizeHexColor((string) ($style['card_body_text_color'] ?? ''), '#667085');
-        $star_color  = self::sanitizeHexColor((string) ($style['star_color'] ?? ''), $primary);
-        $button_bg   = self::sanitizeHexColor((string) ($style['button_color'] ?? ''), $primary);
-        $button_text = self::sanitizeHexColor((string) ($style['button_text_color'] ?? ''), '#131720');
+        // Core sanitize_hex_color() at the CSS interpolation site (Plugin Check recognizes it).
+        $primary     = sanitize_hex_color((string) ($style['primary_color'] ?? '')) ?: '#F59E0B';
+        $accent      = sanitize_hex_color((string) ($style['accent_color'] ?? '')) ?: '#FDB022';
+        $border      = sanitize_hex_color((string) ($style['border_color'] ?? '')) ?: '#EAECF0';
+        $background  = sanitize_hex_color((string) ($style['background_color'] ?? '')) ?: '#FFFFFF';
+        $text        = sanitize_hex_color((string) ($style['text_color'] ?? '')) ?: '#1D2939';
+        $header_text = sanitize_hex_color((string) ($style['header_text_color'] ?? '')) ?: '#1D2939';
+        $title_text  = sanitize_hex_color((string) ($style['card_title_text_color'] ?? '')) ?: '#1D2939';
+        $body_text   = sanitize_hex_color((string) ($style['card_body_text_color'] ?? '')) ?: '#667085';
+        $star_color  = sanitize_hex_color((string) ($style['star_color'] ?? '')) ?: $primary;
+        $button_bg   = sanitize_hex_color((string) ($style['button_color'] ?? '')) ?: $primary;
+        $button_text = sanitize_hex_color((string) ($style['button_text_color'] ?? '')) ?: '#131720';
         $radius      = max(0, min(48, (int) ($style['card_radius'] ?? 12)));
         $gap         = max(0, min(64, (int) ($style['card_gap'] ?? 24)));
         $star_align  = self::sanitizeTextAlign((string) ($style['star_align'] ?? 'left'));
@@ -666,6 +676,9 @@ class Wp
             $shell_shadow = '0 2px 16px rgba(0,0,0,0.05)';
         }
 
+        // Allowlisted stacks only — sanitizeFontKey() + FONT_STACKS (see fontStackCss()).
+        $font = self::fontStackCss((string) ($style['font_family'] ?? 'system'));
+
         $selector = '.hyoka-root.hyoka-widget-styled[data-hyoka-widget="' . $widget_id . '"]';
 
         return $selector . '{'
@@ -685,7 +698,7 @@ class Wp
             . '--hyoka-star-size:' . self::sanitizeCssLength((string) ($style['star_size'] ?? ''), '16px') . ';'
             . '--hyoka-image-radius:' . $image_radius . ';'
             . '--hyoka-layout-columns:' . max(1, min(6, (int) ($style['layout_columns'] ?? 3))) . ';'
-            . '--hyoka-font:' . self::fontStackCss((string) ($style['font_family'] ?? 'system')) . ';'
+            . '--hyoka-font:' . $font . ';'
             . '--hyoka-header-size:' . self::sanitizeCssLength((string) ($style['header_font_size'] ?? ''), '24px') . ';'
             . '--hyoka-header-weight:' . self::sanitizeCssFontWeight((string) ($style['header_font_weight'] ?? ''), '700') . ';'
             . '--hyoka-header-align:' . self::sanitizeTextAlign((string) ($style['header_text_align'] ?? 'center')) . ';'
@@ -866,6 +879,13 @@ class Wp
         return self::sanitizeText($request[$key], $default);
     }
 
+    /**
+     * Read a textarea field from the nonce-bound request bag (Wp::setRequest).
+     *
+     * Never reads $_POST/$_GET directly. Callers must bind the bag only after
+     * check_ajax_referer() / verifyRestNonce() (see Ajax::verifyNonce, Endpoint).
+     * Plugin Check may still flag this helper; the CSRF gate is at the entry point.
+     */
     public static function postTextarea(string $key, string $default = ''): string
     {
         $request = self::requestBag();

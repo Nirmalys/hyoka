@@ -7,6 +7,7 @@ import {
   parseDaysAfter,
   normalizeHexInput,
   hexForColorPicker,
+  isFullHex,
   PREVIEW_SAMPLE,
   setAutomationOnly,
   automationRulesSnapshot,
@@ -25,6 +26,7 @@ import {
   emailTemplatesSnapshot,
   emailTemplatesEqual,
 } from "../components/tab/email/emailTemplatesConfig";
+import { previewFontStack as resolvePreviewFontStack } from "../../editor/editorConfig";
 
 let cachedSettingsPayload = null;
 let settingsLoadPromise = null;
@@ -569,10 +571,11 @@ export const useSettingsForm = () => {
   }, [form, formFromServer, applyRuntimeFlags]);
 
   // Preview Logic
-  const previewPrimaryHex = useMemo(
-    () => hexForColorPicker(form.primary_color, "#F59E0B"),
-    [form.primary_color]
-  );
+  const previewPrimaryHex = useMemo(() => {
+    const hex = hexForColorPicker(form.primary_color, "#F59E0B");
+    // Only allow validated #rrggbb into preview HTML styles (mirrors sanitize_hex_color).
+    return isFullHex(hex) ? hex : "#F59E0B";
+  }, [form.primary_color]);
 
   const emailPreviewReplacements = useMemo(
     () => ({
@@ -604,18 +607,10 @@ export const useSettingsForm = () => {
     return t;
   }, [form.body, emailPreviewReplacements]);
 
-  const previewFontStack = useMemo(() => {
-    const map = {
-      system:
-        'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      arial: "Arial, Helvetica, sans-serif",
-      georgia: "Georgia, Times New Roman, Times, serif",
-      verdana: "Verdana, Geneva, sans-serif",
-      trebuchet: "Trebuchet MS, Helvetica, sans-serif",
-      times: "Times New Roman, Times, serif",
-    };
-    return map[form.font_family] || map.system;
-  }, [form.font_family]);
+  const previewFontStack = useMemo(
+    () => resolvePreviewFontStack(form.font_family),
+    [form.font_family]
+  );
 
   return {
     form,

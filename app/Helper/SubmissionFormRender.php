@@ -293,9 +293,11 @@ class SubmissionFormRender
      */
     public static function getFormCssVariablesBlock(array $settings): string
     {
-        $primary = Wp::sanitizeHexColor((string) ($settings['primary_color'] ?? ''), '#F59E0B');
-        $text    = Wp::sanitizeHexColor((string) ($settings['text_color'] ?? ''), '#1D2939');
-        $font    = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
+        // Core sanitize_hex_color() at the CSS interpolation site (Plugin Check recognizes it).
+        $primary = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
+        $text    = sanitize_hex_color((string) ($settings['text_color'] ?? '')) ?: '#1D2939';
+        // Allowlisted stacks only — Wp::sanitizeFontKey() + FONT_STACKS.
+        $font = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
 
         return '.HYOKA-review-form--styled{'
             . '--hyoka-form-primary:' . $primary . ';'
@@ -315,10 +317,12 @@ class SubmissionFormRender
      */
     public static function getEmailPageCssVariablesBlock(array $settings): string
     {
-        $primary = Wp::sanitizeHexColor((string) ($settings['primary_color'] ?? ''), '#F59E0B');
-        $accent  = Wp::sanitizeHexColor((string) ($settings['accent_color'] ?? ''), '#FDB022');
-        $text    = Wp::sanitizeHexColor((string) ($settings['text_color'] ?? ''), '#111827');
-        $font    = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
+        // Core sanitize_hex_color() at the CSS interpolation site (Plugin Check recognizes it).
+        $primary = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
+        $accent  = sanitize_hex_color((string) ($settings['accent_color'] ?? '')) ?: '#FDB022';
+        $text    = sanitize_hex_color((string) ($settings['text_color'] ?? '')) ?: '#111827';
+        // Allowlisted stacks only — Wp::sanitizeFontKey() + FONT_STACKS.
+        $font = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
 
         return 'body{'
             . '--email-bg-color:#F9FAFB;'

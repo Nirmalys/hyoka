@@ -45,8 +45,14 @@ export const FONT_STACKS = {
   arial: "Arial, Helvetica, sans-serif",
   georgia: "Georgia, Times New Roman, Times, serif",
   verdana: "Verdana, Geneva, sans-serif",
+  trebuchet: "Trebuchet MS, Helvetica, sans-serif",
   times: "Times New Roman, Times, serif",
 };
 
+/**
+ * Allow-listed font stack only — unknown keys fall back to system.
+ */
 export const previewFontStack = (fontFamily) =>
-  FONT_STACKS[fontFamily] || FONT_STACKS.system;
+  Object.prototype.hasOwnProperty.call(FONT_STACKS, fontFamily)
+    ? FONT_STACKS[fontFamily]
+    : FONT_STACKS.system;

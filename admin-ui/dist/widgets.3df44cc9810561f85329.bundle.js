@@ -129,6 +129,16 @@ eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpa
 
 /***/ },
 
+/***/ "./src/components/ui/pages/editor/editorConfig.js"
+/*!********************************************************!*\
+  !*** ./src/components/ui/pages/editor/editorConfig.js ***!
+  \********************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   EDITOR_BUILDING_BLOCKS: () => (/* binding */ EDITOR_BUILDING_BLOCKS),\n/* harmony export */   EDITOR_MODES: () => (/* binding */ EDITOR_MODES),\n/* harmony export */   FONT_STACKS: () => (/* binding */ FONT_STACKS),\n/* harmony export */   getEditorTools: () => (/* binding */ getEditorTools),\n/* harmony export */   previewFontStack: () => (/* binding */ previewFontStack)\n/* harmony export */ });\nconst EDITOR_BUILDING_BLOCKS = [\"text\", \"image\", \"video\", \"button\", \"stars\", \"divider\", \"spacer\", \"link\"];\nconst SHARED_CANVAS_HINT = \"\";\nconst EDITOR_MODES = {\n  email: {\n    elementsKey: \"email_elements\",\n    tools: EDITOR_BUILDING_BLOCKS,\n    saveLabel: \"Save email template\",\n    canvasHint: SHARED_CANVAS_HINT,\n    maxWidth: \"520px\"\n  },\n  form: {\n    elementsKey: \"form_elements\",\n    tools: EDITOR_BUILDING_BLOCKS,\n    saveLabel: \"Save form layout\",\n    canvasHint: SHARED_CANVAS_HINT,\n    maxWidth: \"520px\"\n  },\n  widget: {\n    elementsKey: \"widget_elements\",\n    tools: EDITOR_BUILDING_BLOCKS,\n    saveLabel: \"Save widget styles\",\n    canvasHint: SHARED_CANVAS_HINT,\n    maxWidth: \"1200px\"\n  }\n};\nconst getEditorTools = mode => EDITOR_MODES[mode]?.tools || EDITOR_BUILDING_BLOCKS;\nconst FONT_STACKS = {\n  system: 'system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif',\n  arial: \"Arial, Helvetica, sans-serif\",\n  georgia: \"Georgia, Times New Roman, Times, serif\",\n  verdana: \"Verdana, Geneva, sans-serif\",\n  trebuchet: \"Trebuchet MS, Helvetica, sans-serif\",\n  times: \"Times New Roman, Times, serif\"\n};\n\n/**\n * Allow-listed font stack only — unknown keys fall back to system.\n */\nconst previewFontStack = fontFamily => Object.prototype.hasOwnProperty.call(FONT_STACKS, fontFamily) ? FONT_STACKS[fontFamily] : FONT_STACKS.system;\n\n//# sourceURL=webpack://hyoka/./src/components/ui/pages/editor/editorConfig.js?\n}");
+
+/***/ },
+
 /***/ "./src/assets/widgets/card-carousel.svg?inline"
 /*!*****************************************************!*\
   !*** ./src/assets/widgets/card-carousel.svg?inline ***!

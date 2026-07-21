@@ -271,11 +271,11 @@ class MediaUpload
         nocache_headers();
         status_header(200);
 
-        $heading = esc_html(sprintf(
+        $heading = sprintf(
             /* translators: %s: product name */
             __('Add photos or videos to your review for %s', 'hyoka-product-reviews'),
             $title
-        ));
+        );
 
         header('Content-Type: text/html; charset=' . get_option('blog_charset'));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';

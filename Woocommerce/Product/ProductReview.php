@@ -307,7 +307,7 @@ class ProductReview
             return '';
         }
 
-        return $output;
+        return wp_kses($output, Wp::widgetMountAllowedHtml());
     }
 
     /**
@@ -395,7 +395,7 @@ class ProductReview
             return '';
         }
 
-        return $html;
+        return wp_kses($html, Wp::widgetMountAllowedHtml());
     }
 
     public static function publishReview(int $review_id, string $status): bool

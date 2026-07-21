@@ -31,7 +31,7 @@ $hyoka_show_product  = ! isset($hyoka_style['show_product_name']) || ! empty($hy
     <?php endif; ?>
 
     <?php if ($hyoka_content !== '') : ?>
-        <p class="HYOKA-testimonial-text"><?php echo '"' . esc_html($hyoka_content) . '"'; ?></p>
+        <p class="HYOKA-testimonial-text"><?php echo esc_html('"' . $hyoka_content . '"'); ?></p>
     <?php endif; ?>
 
     <div class="HYOKA-testimonial-stars">

@@ -132,8 +132,8 @@ class EmailSender
         $merged['subject']                 = (string) ($merged['subject'] ?? '');
         $merged['email_heading']           = (string) ($merged['email_heading'] ?? $defaults['email_heading']);
         $merged['body']                    = (string) ($merged['body'] ?? '');
-        $merged['primary_color']           = Wp::sanitizeHexColor((string) ($merged['primary_color'] ?? $defaults['primary_color']), $defaults['primary_color']);
-        $merged['accent_color']            = Wp::sanitizeHexColor((string) ($merged['accent_color'] ?? $defaults['accent_color']), $defaults['accent_color']);
+        $merged['primary_color']           = sanitize_hex_color((string) ($merged['primary_color'] ?? $defaults['primary_color'])) ?: $defaults['primary_color'];
+        $merged['accent_color']            = sanitize_hex_color((string) ($merged['accent_color'] ?? $defaults['accent_color'])) ?: $defaults['accent_color'];
         $merged['font_family']             = Wp::sanitizeFontKey((string) ($merged['font_family'] ?? 'system'));
         $merged['spam_filter_enabled']       = filter_var($merged['spam_filter_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $merged['spam_filter_keywords']      = self::keywordListOrDefault(
@@ -199,10 +199,10 @@ class EmailSender
         $merged['form_elements']                = Wp::sanitizeElementsArray(
             is_array($merged['form_elements'] ?? null) ? $merged['form_elements'] : []
         );
-        $merged['star_color']                   = Wp::sanitizeHexColor((string) ($merged['star_color'] ?? ''), '#F59E0B');
-        $merged['button_color']                 = Wp::sanitizeHexColor((string) ($merged['button_color'] ?? ''), '#F59E0B');
-        $merged['button_text_color']            = Wp::sanitizeHexColor((string) ($merged['button_text_color'] ?? ''), '#ffffff');
-        $merged['text_color']                   = Wp::sanitizeHexColor((string) ($merged['text_color'] ?? ''), '#111827');
+        $merged['star_color']                   = sanitize_hex_color((string) ($merged['star_color'] ?? '')) ?: '#F59E0B';
+        $merged['button_color']                 = sanitize_hex_color((string) ($merged['button_color'] ?? '')) ?: '#F59E0B';
+        $merged['button_text_color']            = sanitize_hex_color((string) ($merged['button_text_color'] ?? '')) ?: '#ffffff';
+        $merged['text_color']                   = sanitize_hex_color((string) ($merged['text_color'] ?? '')) ?: '#111827';
         $merged['email_preheader']              = sanitize_text_field((string) ($merged['email_preheader'] ?? ''));
         $merged['email_layouts']                = self::normalizeEmailLayouts($merged['email_layouts'] ?? []);
         $merged['email_layout_block_styles']    = self::normalizeEmailLayoutBlockStyles($merged['email_layout_block_styles'] ?? []);
@@ -372,7 +372,7 @@ class EmailSender
                         case 'color':
                         case 'starColor':
                         case 'bgColor':
-                            $cleanStyles[$styleKey] = Wp::sanitizeHexColor($raw, '#4b5563');
+                            $cleanStyles[$styleKey] = sanitize_hex_color($raw) ?: '#4b5563';
                             break;
                         case 'fontSize':
                             $cleanStyles[$styleKey] = Wp::sanitizeCssLength($raw, '14px');
@@ -539,8 +539,8 @@ class EmailSender
             'subject'                 => sanitize_text_field((string) ($data['subject'] ?? '')),
             'email_heading'           => sanitize_text_field((string) ($data['email_heading'] ?? '')),
             'body'                    => wp_kses_post((string) ($data['body'] ?? '')),
-            'primary_color'           => Wp::sanitizeHexColor((string) ($data['primary_color'] ?? ''), '#F59E0B'),
-            'accent_color'            => Wp::sanitizeHexColor((string) ($data['accent_color'] ?? ''), '#FDB022'),
+            'primary_color'           => sanitize_hex_color((string) ($data['primary_color'] ?? '')) ?: '#F59E0B',
+            'accent_color'            => sanitize_hex_color((string) ($data['accent_color'] ?? '')) ?: '#FDB022',
             'font_family'             => Wp::sanitizeFontKey((string) ($data['font_family'] ?? 'system')),
             'email_elements'            => Wp::sanitizeElementsArray(
                 is_array($data['email_elements'] ?? null) ? $data['email_elements'] : []
@@ -587,10 +587,10 @@ class EmailSender
             'form_show_rating'                => filter_var($data['form_show_rating'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'email_header_size'               => Wp::sanitizeCssLength((string) ($data['email_header_size'] ?? '24px'), '24px'),
             'email_text_size'                 => Wp::sanitizeCssLength((string) ($data['email_text_size'] ?? '14px'), '14px'),
-            'star_color'                      => Wp::sanitizeHexColor((string) ($data['star_color'] ?? ''), '#F59E0B'),
-            'button_color'                    => Wp::sanitizeHexColor((string) ($data['button_color'] ?? ''), '#F59E0B'),
-            'button_text_color'               => Wp::sanitizeHexColor((string) ($data['button_text_color'] ?? ''), '#ffffff'),
-            'text_color'                      => Wp::sanitizeHexColor((string) ($data['text_color'] ?? ''), '#111827'),
+            'star_color'                      => sanitize_hex_color((string) ($data['star_color'] ?? '')) ?: '#F59E0B',
+            'button_color'                    => sanitize_hex_color((string) ($data['button_color'] ?? '')) ?: '#F59E0B',
+            'button_text_color'               => sanitize_hex_color((string) ($data['button_text_color'] ?? '')) ?: '#ffffff',
+            'text_color'                      => sanitize_hex_color((string) ($data['text_color'] ?? '')) ?: '#111827',
             'email_preheader'                 => sanitize_text_field((string) ($data['email_preheader'] ?? '')),
             'email_layouts'                   => self::normalizeEmailLayouts($data['email_layouts'] ?? []),
             'email_layout_block_styles'       => self::normalizeEmailLayoutBlockStyles($data['email_layout_block_styles'] ?? []),

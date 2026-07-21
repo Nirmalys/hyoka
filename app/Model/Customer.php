@@ -20,7 +20,8 @@ defined('ABSPATH') || exit;
 class Customer
 {
     /**
-     * Fixed column list for full purchase-row reads (not user input).
+     * Fixed column list for customer table SELECTs (plugin-owned schema only).
+     * Prefer inlining this literal in $wpdb->prepare() SQL so Plugin Check can see it.
      */
     public const CUSTOMER_COLUMNS = 'id, order_id, product_id, product, customer, purchase_date, email, created_at, updated_at, invite, review, audit';
 
@@ -145,12 +146,12 @@ class Customer
         global $wpdb;
 
         $table = self::getTableName();
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from getTableName(); SELECT columns are a fixed literal; values bound via prepare().
         if ($search !== '') {
             $like = '%' . $wpdb->esc_like($search) . '%';
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT ' . self::CUSTOMER_COLUMNS . "
+                    "SELECT id, order_id, product_id, product, customer, purchase_date, email, created_at, updated_at, invite, review, audit
                  FROM {$table}
                  WHERE (customer LIKE %s OR product LIKE %s OR order_id LIKE %s)
                  ORDER BY purchase_date DESC, id DESC
@@ -166,7 +167,7 @@ class Customer
         } else {
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
-                    'SELECT ' . self::CUSTOMER_COLUMNS . "
+                    "SELECT id, order_id, product_id, product, customer, purchase_date, email, created_at, updated_at, invite, review, audit
                  FROM {$table}
                  ORDER BY purchase_date DESC, id DESC
                  LIMIT %d OFFSET %d",
@@ -176,7 +177,7 @@ class Customer
                 ARRAY_A
             );
         }
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($rows) ? Meta::hydrateRowsWithEmail($rows) : [];
     }
@@ -514,10 +515,10 @@ class Customer
         global $wpdb;
 
         $table = self::getTableName();
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from getTableName(); column list is a fixed literal; values bound via prepare().
         $row = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT ' . self::CUSTOMER_COLUMNS . "
+                "SELECT id, order_id, product_id, product, customer, purchase_date, email, created_at, updated_at, invite, review, audit
              FROM {$table}
              WHERE id = %d
              LIMIT 1",
@@ -525,7 +526,7 @@ class Customer
             ),
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($row) ? Meta::hydrateRowWithEmail($row) : null;
     }
@@ -541,10 +542,10 @@ class Customer
         global $wpdb;
 
         $table = self::getTableName();
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); CUSTOMER_COLUMNS is a fixed class constant; user values are bound via $wpdb->prepare(); no WP API replaces these custom-table queries (DirectQuery/NoCaching).
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from getTableName(); column list is a fixed literal; values bound via prepare().
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT ' . self::CUSTOMER_COLUMNS . "
+                "SELECT id, order_id, product_id, product, customer, purchase_date, email, created_at, updated_at, invite, review, audit
              FROM {$table}
              WHERE product_id = %d
              ORDER BY id DESC",
@@ -552,7 +553,7 @@ class Customer
             ),
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return is_array($rows) ? Meta::hydrateRowsWithEmail($rows) : [];
     }

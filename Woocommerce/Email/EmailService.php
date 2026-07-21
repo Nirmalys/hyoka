@@ -144,8 +144,9 @@ class EmailService
         string $accent_color,
         string $font_key
     ): string {
-        $primary = Wp::sanitizeHexColor($primary_color, '#F59E0B');
-        $font    = esc_attr(Wp::fontStackCss($font_key));
+        $primary = sanitize_hex_color($primary_color) ?: '#F59E0B';
+        // Allowlisted stacks only — sanitizeFontKey() + FONT_STACKS; esc_attr for style= context.
+        $font = esc_attr(Wp::fontStackCss($font_key));
 
         $heading_safe    = esc_html($heading_html);
         $inner_body_html = Wp::sanitizeEmailInnerHtml($inner_body_html);
@@ -262,7 +263,7 @@ class EmailService
             ? $product_url
             : esc_url_raw($raw_review_link);
 
-        $primary_hex = Wp::sanitizeHexColor($button_primary, '#F59E0B');
+        $primary_hex = sanitize_hex_color($button_primary) ?: '#F59E0B';
         $settings    = EmailSender::getSettings();
         $layout      = self::mergedLayout('store_review_fallback', $settings);
         $btn_label   = trim(strtr((string) ($layout['buttonText'] ?? ''), []));
@@ -273,7 +274,7 @@ class EmailService
         $name_esc = esc_html((string) $product_name);
         $product_href = $raw_product_link !== '' ? esc_url($raw_product_link) : '';
         $product_name_html = $product_href !== ''
-            ? '<a href="' . esc_attr($product_href) . '" style="color:#111827;font-weight:700;text-decoration:underline;">' . $name_esc . '</a>'
+            ? '<a href="' . $product_href . '" style="color:#111827;font-weight:700;text-decoration:underline;">' . $name_esc . '</a>'
             : '<strong>' . $name_esc . '</strong>';
 
         $review_button_html = $review_submitted
@@ -382,7 +383,7 @@ class EmailService
         }
 
         $settings     = EmailSender::getSettings();
-        $primary_hex  = Wp::sanitizeHexColor((string) ($settings['primary_color'] ?? ''), '#F59E0B');
+        $primary_hex  = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
 
         if (! in_array($template_id, self::KNOWN_TEMPLATES, true)) {
             $failure_reason = __('Unknown email template.', 'hyoka-product-reviews');
@@ -510,7 +511,7 @@ class EmailService
         }
 
         $settings     = EmailSender::getSettings();
-        $primary_hex  = Wp::sanitizeHexColor((string) ($settings['primary_color'] ?? ''), '#F59E0B');
+        $primary_hex  = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
         $replacements = self::buildEmailVars($row, (string) $invite['url'], $primary_hex);
         if ($replacements === null) {
             $failure_reason = 'Missing or invalid customer email for this purchase row.';
@@ -877,7 +878,7 @@ class EmailService
         $star_style = $settings !== []
             ? self::getBlockStyle($settings, $template_id, 'starsHint', $primary_hex)
             : ['starColor' => $primary_hex, 'fontSize' => '13px', 'color' => '#667085', 'textAlign' => 'center'];
-        $star_color = Wp::sanitizeHexColor((string) ($star_style['starColor'] ?? ''), $primary_hex);
+        $star_color = sanitize_hex_color((string) ($star_style['starColor'] ?? '')) ?: $primary_hex;
         $stars_html = self::buildStarsHtml($star_color);
 
         $review_url = (string) ($replacements['{review_url}'] ?? '');
@@ -899,11 +900,15 @@ class EmailService
 
     private static function buildStarsHtml(string $star_color, string $star_size = '24px'): string
     {
-        $color = esc_attr($star_color);
-        $size  = esc_attr($star_size);
+        $color = esc_attr(sanitize_hex_color($star_color) ?: '#F59E0B');
+        $size  = esc_attr(Wp::sanitizeCssLength($star_size, '24px'));
         $html  = '';
         for ($i = 0; $i < 5; $i++) {
-            $html .= '<span style="color:' . $color . ';font-size:' . $size . ';line-height:1;">★</span>';
+            $html .= sprintf(
+                '<span style="color:%1$s;font-size:%2$s;line-height:1;">★</span>',
+                $color,
+                $size
+            );
         }
 
         return $html;
@@ -978,13 +983,13 @@ class EmailService
         $btn_style = $settings !== []
             ? self::getBlockStyle($settings, $template_id, $block_key, $primary_hex)
             : ['bgColor' => $primary_hex, 'color' => '#ffffff', 'fontSize' => '16px', 'fontWeight' => '600', 'textAlign' => 'center'];
-        $bg_color    = Wp::sanitizeHexColor((string) ($btn_style['bgColor'] ?? ''), $primary_hex);
-        $text_color  = Wp::sanitizeHexColor((string) ($btn_style['color'] ?? ''), '#ffffff');
+        $bg_color    = sanitize_hex_color((string) ($btn_style['bgColor'] ?? '')) ?: $primary_hex;
+        $text_color  = sanitize_hex_color((string) ($btn_style['color'] ?? '')) ?: '#ffffff';
         $font_size   = Wp::sanitizeCssLength((string) ($btn_style['fontSize'] ?? '16px'), '16px');
         $font_weight = Wp::sanitizeCssFontWeight((string) ($btn_style['fontWeight'] ?? '600'), '600');
 
         return '<p style="text-align:center;margin:24px 0 0;">'
-            . '<a href="' . esc_url($href) . '" style="display:inline-block;padding:12px 24px;background-color:'
+            . '<a href="' . $href . '" style="display:inline-block;padding:12px 24px;background-color:'
             . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . ' !important;text-decoration:none;border-radius:6px;font-weight:'
             . esc_attr($font_weight) . ';font-size:' . esc_attr($font_size) . ';">'
             . esc_html($label)
@@ -1028,7 +1033,7 @@ class EmailService
         $textAlign  = Wp::sanitizeTextAlign((string) ($el['textAlign'] ?? 'left'));
         $fontSize   = Wp::sanitizeCssLength((string) ($el['fontSize'] ?? '14px'), '14px');
         $fontWeight = Wp::sanitizeCssFontWeight((string) ($el['fontWeight'] ?? '400'), '400');
-        $textColor  = Wp::sanitizeHexColor((string) ($el['color'] ?? '#4b5563'), '#4b5563');
+        $textColor  = sanitize_hex_color((string) ($el['color'] ?? '#4b5563')) ?: '#4b5563';
         $style_base = 'text-align:' . $textAlign . ';font-size:' . $fontSize . ';font-weight:' . $fontWeight . ';color:' . $textColor . ';';
 
         switch ($type) {
@@ -1056,7 +1061,7 @@ class EmailService
                 if ($url !== '') {
                     $html = '<div style="text-align:center;margin-bottom:20px;padding:20px;background:#f9fafb;border-radius:8px;border:1px solid #eaecf0;">'
                         . '<div style="margin-bottom:10px;">' . esc_html__('Video Content', 'hyoka-product-reviews') . '</div>'
-                        . '<a href="' . esc_url($url) . '" style="color:' . esc_attr($primary_hex) . ';text-decoration:underline;">'
+                        . '<a href="' . $url . '" style="color:' . esc_attr($primary_hex) . ';text-decoration:underline;">'
                         . esc_html__('Watch Video', 'hyoka-product-reviews') . '</a>'
                         . '</div>';
                 }
@@ -1071,7 +1076,7 @@ class EmailService
                     break;
                 }
                 $html = '<div style="text-align:center;margin:25px 0;">'
-                    . '<a href="' . esc_url($url) . '" style="display:inline-block;padding:12px 30px;background-color:'
+                    . '<a href="' . $url . '" style="display:inline-block;padding:12px 30px;background-color:'
                     . esc_attr($primary_hex) . ';color:#ffffff !important;text-decoration:none;border-radius:6px;font-weight:600;font-size:'
                     . esc_attr($fontSize) . ';">'
                     . esc_html($text)
@@ -1079,10 +1084,10 @@ class EmailService
                 break;
             case 'rating':
             case 'stars':
-                $starColor = Wp::sanitizeHexColor((string) ($el['starColor'] ?? $primary_hex), $primary_hex);
+                $starColor = sanitize_hex_color((string) ($el['starColor'] ?? $primary_hex)) ?: $primary_hex;
                 $hintText  = esc_html(strtr($el['hintText'] ?? '', $replacements));
                 $hintSize  = Wp::sanitizeCssLength((string) ($el['hintFontSize'] ?? '13px'), '13px');
-                $hintColor = Wp::sanitizeHexColor((string) ($el['hintColor'] ?? '#4b5563'), '#4b5563');
+                $hintColor = sanitize_hex_color((string) ($el['hintColor'] ?? '#4b5563')) ?: '#4b5563';
                 $align     = Wp::sanitizeTextAlign((string) ($el['textAlign'] ?? 'center'));
                 $starSize  = Wp::sanitizeCssLength((string) ($el['starSize'] ?? '24px'), '24px');
                 $starsHtml = self::buildStarsHtml($starColor, $starSize);
@@ -1094,7 +1099,7 @@ class EmailService
                 $html .= '</div>';
                 break;
             case 'divider':
-                $lineColor = Wp::sanitizeHexColor((string) ($el['color'] ?? '#eaecf0'), '#eaecf0');
+                $lineColor = sanitize_hex_color((string) ($el['color'] ?? '#eaecf0')) ?: '#eaecf0';
                 $html      = '<hr style="border:0;border-top:2px solid ' . esc_attr($lineColor) . ';margin:20px 0;" />';
                 break;
             case 'spacer':
@@ -1104,9 +1109,9 @@ class EmailService
             case 'link':
                 $linkText  = esc_html(strtr($el['text'] ?? 'Learn more', $replacements));
                 $linkUrl   = esc_url(strtr((string) ($el['url'] ?? '#'), $replacements));
-                $linkColor = Wp::sanitizeHexColor((string) ($el['color'] ?? $primary_hex), $primary_hex);
+                $linkColor = sanitize_hex_color((string) ($el['color'] ?? $primary_hex)) ?: $primary_hex;
                 $html      = '<div style="text-align:center;margin:15px 0;">'
-                    . '<a href="' . esc_url($linkUrl) . '" style="color:' . esc_attr($linkColor) . ';font-size:'
+                    . '<a href="' . $linkUrl . '" style="color:' . esc_attr($linkColor) . ';font-size:'
                     . esc_attr($fontSize) . ';font-weight:600;text-decoration:underline;">'
                     . $linkText . '</a></div>';
                 break;
@@ -1146,16 +1151,17 @@ class EmailService
         }
 
         $permalink = $product_id > 0 ? (string) get_permalink($product_id) : '';
-        $product_url = $permalink !== '' ? esc_url($permalink) : '';
+        $product_url = $permalink !== '' ? esc_url_raw($permalink) : '';
         $name_esc    = esc_html($product_name);
-        $product_name_html = $product_url !== ''
-            ? '<a href="' . esc_url($permalink) . '" style="color:#111827;font-weight:700;text-decoration:underline;">' . $name_esc . '</a>'
+        $product_href = $permalink !== '' ? esc_url($permalink) : '';
+        $product_name_html = $product_href !== ''
+            ? '<a href="' . $product_href . '" style="color:#111827;font-weight:700;text-decoration:underline;">' . $name_esc . '</a>'
             : '<strong>' . $name_esc . '</strong>';
 
         $product_image_url = self::resolveProductImageUrl([], $product_id);
         $image_html        = self::buildProductImageHtml($product_image_url, $product_name);
 
-        $primary_hex = Wp::sanitizeHexColor((string) (EmailSender::getSettings()['primary_color'] ?? ''), '#F59E0B');
+        $primary_hex = sanitize_hex_color((string) (EmailSender::getSettings()['primary_color'] ?? '')) ?: '#F59E0B';
         $review_url  = Link::resolveReviewUrl($product_id, $email);
         $review_button_html = '';
 
@@ -1166,7 +1172,7 @@ class EmailService
             '{product_image_url}'  => $product_image_url,
             '{product_image}'      => $image_html,
             '{product_url}'        => $product_url,
-            '{review_url}'         => esc_url($review_url),
+            '{review_url}'         => esc_url_raw($review_url),
             '{review_button_html}' => $review_button_html,
             '{site_name}'          => (string) get_bloginfo('name'),
             '{site_url}'           => esc_url_raw(wp_unslash(home_url())),
@@ -1198,13 +1204,13 @@ class EmailService
             $merged['color'] = $primary_hex;
         }
         if (empty($merged['starColor'])) {
-            $merged['starColor'] = Wp::sanitizeHexColor((string) ($settings['star_color'] ?? ''), $primary_hex);
+            $merged['starColor'] = sanitize_hex_color((string) ($settings['star_color'] ?? '')) ?: $primary_hex;
         }
         if (empty($merged['bgColor']) && $preset_key === 'button') {
-            $merged['bgColor'] = Wp::sanitizeHexColor((string) ($settings['button_color'] ?? ''), $primary_hex);
+            $merged['bgColor'] = sanitize_hex_color((string) ($settings['button_color'] ?? '')) ?: $primary_hex;
         }
         if ($preset_key === 'button' && empty($merged['color'])) {
-            $merged['color'] = Wp::sanitizeHexColor((string) ($settings['button_text_color'] ?? ''), '#ffffff');
+            $merged['color'] = sanitize_hex_color((string) ($settings['button_text_color'] ?? '')) ?: '#ffffff';
         }
 
         return $merged;
@@ -1301,26 +1307,26 @@ class EmailService
                 $overrides['fontSize'] = Wp::sanitizeCssLength((string) $settings['email_header_size'], '24px');
             }
             if (! empty($settings['text_color'])) {
-                $overrides['color'] = Wp::sanitizeHexColor((string) $settings['text_color'], '#111827');
+                $overrides['color'] = sanitize_hex_color((string) $settings['text_color']) ?: '#111827';
             }
         } elseif (in_array($block_key, $body_blocks, true)) {
             if (! empty($settings['email_text_size'])) {
                 $overrides['fontSize'] = Wp::sanitizeCssLength((string) $settings['email_text_size'], '14px');
             }
             if (! empty($settings['text_color'])) {
-                $overrides['color'] = Wp::sanitizeHexColor((string) $settings['text_color'], '#4b5563');
+                $overrides['color'] = sanitize_hex_color((string) $settings['text_color']) ?: '#4b5563';
             }
         }
 
         if ($preset_key === 'stars' && ! empty($settings['star_color'])) {
-            $overrides['starColor'] = Wp::sanitizeHexColor((string) $settings['star_color'], '#F59E0B');
+            $overrides['starColor'] = sanitize_hex_color((string) $settings['star_color']) ?: '#F59E0B';
         }
         if ($preset_key === 'button') {
             if (! empty($settings['button_color'])) {
-                $overrides['bgColor'] = Wp::sanitizeHexColor((string) $settings['button_color'], '#F59E0B');
+                $overrides['bgColor'] = sanitize_hex_color((string) $settings['button_color']) ?: '#F59E0B';
             }
             if (! empty($settings['button_text_color'])) {
-                $overrides['color'] = Wp::sanitizeHexColor((string) $settings['button_text_color'], '#ffffff');
+                $overrides['color'] = sanitize_hex_color((string) $settings['button_text_color']) ?: '#ffffff';
             }
         }
 
@@ -1343,7 +1349,7 @@ class EmailService
             $parts[] = 'font-weight:' . Wp::sanitizeCssFontWeight((string) $merged['fontWeight'], '400');
         }
         if (! empty($merged['color'])) {
-            $parts[] = 'color:' . Wp::sanitizeHexColor((string) $merged['color'], '#4b5563');
+            $parts[] = 'color:' . (sanitize_hex_color((string) $merged['color']) ?: '#4b5563');
         }
         if (! empty($merged['textAlign'])) {
             $parts[] = 'text-align:' . Wp::sanitizeTextAlign((string) $merged['textAlign']);

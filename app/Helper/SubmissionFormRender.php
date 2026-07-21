@@ -101,7 +101,7 @@ class SubmissionFormRender
                         <?php if ($show_rating) : ?>
                             <div class="HYOKA-star-rating HYOKA-form-standard-stars" aria-label="<?php esc_attr_e('Your rating', 'hyoka-product-reviews'); ?>">
                                 <?php for ($i = 1; $i <= 5; $i++) : ?>
-                                    <button type="button" class="HYOKA-star-btn" data-value="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr(sprintf(/* translators: %d: star count */ __('%d stars', 'hyoka-product-reviews'), $i)); ?>">★</button>
+                                    <button type="button" class="HYOKA-star-btn" data-value="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr(sprintf(/* translators: %d: star rating from 1 to 5. */ __('%d stars', 'hyoka-product-reviews'), $i)); ?>">★</button>
                                 <?php endfor; ?>
                             </div>
                         <?php endif; ?>

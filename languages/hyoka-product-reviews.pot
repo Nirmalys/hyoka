@@ -3,44 +3,73 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Hyoka 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hyoka\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hyoka-product-reviews\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T06:07:17+00:00\n"
+"POT-Creation-Date: 2026-07-21T11:27:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: hyoka-product-reviews\n"
 
 #. Plugin Name of the plugin
-#: hyoka.php
+#: hyoka-product-reviews.php
 msgid "Hyoka"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: hyoka.php
+#: hyoka-product-reviews.php
 msgid "https://ysinnovations.com/our-products/hyoka"
 msgstr ""
 
 #. Description of the plugin
-#: hyoka.php
+#: hyoka-product-reviews.php
 msgid "Product reviews & ratings for WooCommerce — collect, moderate, and showcase reviews and UGC."
 msgstr ""
 
 #. Author of the plugin
-#: hyoka.php
+#: hyoka-product-reviews.php
 msgid "YS Innovations"
 msgstr ""
 
 #. Author URI of the plugin
-#: hyoka.php
+#: hyoka-product-reviews.php
 msgid "https://ysinnovations.com"
 msgstr ""
 
 #: app/Controller/Ajax.php:251
 msgid "Unable to process media upload."
+msgstr ""
+
+#: app/Controller/Ajax.php:460
+#: Woocommerce/Email/MediaUpload.php:105
+msgid "Invalid request."
+msgstr ""
+
+#. translators: %d: number of reviews updated
+#: app/Controller/Ajax.php:470
+#, php-format
+msgid "%d reviews updated successfully."
+msgstr ""
+
+#: app/Controller/Ajax.php:477
+msgid "Failed to update reviews."
+msgstr ""
+
+#: app/Controller/Ajax.php:487
+msgid "No reviews selected."
+msgstr ""
+
+#. translators: %d: number of reviews deleted
+#: app/Controller/Ajax.php:496
+#, php-format
+msgid "%d reviews deleted successfully."
+msgstr ""
+
+#: app/Controller/Ajax.php:503
+msgid "Failed to delete reviews."
 msgstr ""
 
 #: app/Controller/Rest/Endpoint.php:86
@@ -155,7 +184,6 @@ msgstr ""
 msgid "Your rating"
 msgstr ""
 
-#. translators: %d: star count
 #. translators: %d: star rating from 1 to 5.
 #: app/Helper/SubmissionFormRender.php:104
 #: app/Helper/SubmissionFormRender.php:228
@@ -421,41 +449,41 @@ msgstr ""
 msgid "Generic spreadsheet import for any review export or custom template."
 msgstr ""
 
-#: app/Model/Customer.php:86
-#: app/Model/Customer.php:98
-#: app/Model/Customer.php:122
-#: app/Model/Customer.php:129
-#: app/Model/Customer.php:135
+#: app/Model/Customer.php:87
+#: app/Model/Customer.php:99
+#: app/Model/Customer.php:123
+#: app/Model/Customer.php:130
+#: app/Model/Customer.php:136
 msgid "Pending"
 msgstr ""
 
-#: app/Model/Customer.php:87
+#: app/Model/Customer.php:88
 msgid "WooCommerce order is not Completed yet."
 msgstr ""
 
-#: app/Model/Customer.php:100
+#: app/Model/Customer.php:101
 msgid "Automation is off."
 msgstr ""
 
-#: app/Model/Customer.php:101
+#: app/Model/Customer.php:102
 msgid "Waiting for automation to send."
 msgstr ""
 
-#: app/Model/Customer.php:110
+#: app/Model/Customer.php:111
 msgid "Scheduled"
 msgstr ""
 
 #. translators: 1: formatted date, 2: number of days
-#: app/Model/Customer.php:113
+#: app/Model/Customer.php:114
 #, php-format
 msgid "Sends on or after %1$s (%2$d days after purchase)."
 msgstr ""
 
-#: app/Model/Customer.php:123
+#: app/Model/Customer.php:124
 msgid "Turn on automation or send manually from Manual Request."
 msgstr ""
 
-#: app/Model/Customer.php:130
+#: app/Model/Customer.php:131
 msgid "Scheduled review requests are off. Send manually from Manual Request."
 msgstr ""
 
@@ -558,77 +586,77 @@ msgstr ""
 msgid "Every 15 minutes (Hyoka)"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:270
-#: Woocommerce/Email/EmailService.php:708
+#: Woocommerce/Email/EmailService.php:271
+#: Woocommerce/Email/EmailService.php:709
 msgid "Leave a review"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:375
+#: Woocommerce/Email/EmailService.php:376
 msgid "Invalid recipient email."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:380
+#: Woocommerce/Email/EmailService.php:381
 msgid "This email template rule is disabled."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:388
+#: Woocommerce/Email/EmailService.php:389
 msgid "Unknown email template."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:396
+#: Woocommerce/Email/EmailService.php:397
 msgid "Reply text is empty."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:412
+#: Woocommerce/Email/EmailService.php:413
 msgid "Email template body is empty."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:467
+#: Woocommerce/Email/EmailService.php:468
 msgid "wp_mail returned false. Please check your server or plugin settings."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:484
+#: Woocommerce/Email/EmailService.php:485
 msgid "Customer already submitted a review for this purchase."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:508
+#: Woocommerce/Email/EmailService.php:509
 msgid "Could not create a unique review link for this email. Check that the purchase row can store an invite token."
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:541
+#: Woocommerce/Email/EmailService.php:542
 msgid "We'd love your feedback"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:544
+#: Woocommerce/Email/EmailService.php:545
 msgid "How was your experience with us?"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:554
+#: Woocommerce/Email/EmailService.php:555
 msgid "Reminder: We would still love your review"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:557
+#: Woocommerce/Email/EmailService.php:558
 msgid "Still have a moment to leave a review?"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:570
+#: Woocommerce/Email/EmailService.php:571
 msgid "Notification from {site_name}"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:661
+#: Woocommerce/Email/EmailService.php:662
 #: Woocommerce/Email/MediaUpload.php:297
 msgid "Upload media"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:1058
+#: Woocommerce/Email/EmailService.php:1063
 msgid "Video Content"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:1060
+#: Woocommerce/Email/EmailService.php:1065
 msgid "Watch Video"
 msgstr ""
 
-#: Woocommerce/Email/EmailService.php:1145
+#: Woocommerce/Email/EmailService.php:1150
 msgid "your product"
 msgstr ""
 
@@ -646,10 +674,6 @@ msgstr ""
 #: Woocommerce/Email/ReviewInvite.php:57
 #: Woocommerce/Product/ProductReview.php:440
 msgid "This review link is invalid."
-msgstr ""
-
-#: Woocommerce/Email/MediaUpload.php:105
-msgid "Invalid request."
 msgstr ""
 
 #: Woocommerce/Email/MediaUpload.php:111

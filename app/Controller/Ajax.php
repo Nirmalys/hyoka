@@ -457,18 +457,24 @@ class Ajax
         $status_raw = Wp::postText('status');
 
         if ($review_ids === [] || $status_raw === '') {
-            wp_send_json_error(['message' => 'Invalid request.']);
+            wp_send_json_error(['message' => __('Invalid request.', 'hyoka-product-reviews')]);
             return;
         }
 
         $status = Review::normalizeStatus($status_raw);
         $count  = Reviewing::bulkUpdateReviewStatus($review_ids, $status);
         if ($count > 0) {
-            wp_send_json_success(['message' => sprintf('%d reviews updated successfully.', $count)]);
+            wp_send_json_success([
+                'message' => sprintf(
+                    /* translators: %d: number of reviews updated */
+                    __('%d reviews updated successfully.', 'hyoka-product-reviews'),
+                    $count
+                ),
+            ]);
             return;
         }
 
-        wp_send_json_error(['message' => 'Failed to update reviews.']);
+        wp_send_json_error(['message' => __('Failed to update reviews.', 'hyoka-product-reviews')]);
     }
 
     public static function handleBulkDeleteReviews()
@@ -478,17 +484,23 @@ class Ajax
 
         $review_ids = Wp::postIntList('review_ids');
         if ($review_ids === []) {
-            wp_send_json_error(['message' => 'No reviews selected.']);
+            wp_send_json_error(['message' => __('No reviews selected.', 'hyoka-product-reviews')]);
             return;
         }
 
         $count = Reviewing::bulkDeleteReviews($review_ids);
         if ($count > 0) {
-            wp_send_json_success(['message' => sprintf('%d reviews deleted successfully.', $count)]);
+            wp_send_json_success([
+                'message' => sprintf(
+                    /* translators: %d: number of reviews deleted */
+                    __('%d reviews deleted successfully.', 'hyoka-product-reviews'),
+                    $count
+                ),
+            ]);
             return;
         }
 
-        wp_send_json_error(['message' => 'Failed to delete reviews.']);
+        wp_send_json_error(['message' => __('Failed to delete reviews.', 'hyoka-product-reviews')]);
     }
 
     public static function handleFetchProductReviews()

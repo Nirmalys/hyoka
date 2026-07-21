@@ -316,6 +316,19 @@ languages/                  # Translation template
 hyoka.php
 composer.json
 
+= Packaging for WordPress.org =
+
+The WordPress.org plugin slug and text domain are both `hyoka-product-reviews`.
+
+When building the submission ZIP, the archive root folder must be named `hyoka-product-reviews` (not `hyoka`). Plugin Check derives the expected text domain from that folder name.
+
+Example:
+
+cd wp-content/plugins
+mv hyoka hyoka-product-reviews
+zip -r hyoka-product-reviews.zip hyoka-product-reviews \
+  -x "*/node_modules/*" -x "*/.git/*"
+
 = Requirements =
 
 * Node.js 18+

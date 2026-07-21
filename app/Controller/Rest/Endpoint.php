@@ -83,7 +83,7 @@ class Endpoint
             default:
                 return new \WP_Error(
                     'invalid_action',
-                    __('Invalid action', 'hyoka'),
+                    __('Invalid action', 'hyoka-product-reviews'),
                     ['status' => 400]
                 );
         }
@@ -108,7 +108,7 @@ class Endpoint
         if ($nonce === '') {
             return new \WP_Error(
                 'missing_nonce',
-                __('Missing security token.', 'hyoka'),
+                __('Missing security token.', 'hyoka-product-reviews'),
                 ['status' => 403]
             );
         }
@@ -117,7 +117,7 @@ class Endpoint
         if (! wp_verify_nonce($nonce, 'wp_rest')) {
             return new \WP_Error(
                 'invalid_nonce',
-                __('Invalid security token.', 'hyoka'),
+                __('Invalid security token.', 'hyoka-product-reviews'),
                 ['status' => 403]
             );
         }
@@ -151,7 +151,7 @@ class Endpoint
                 'message' => (
                     defined('WP_DEBUG') && WP_DEBUG
                         ? $e->getMessage()
-                        : __('An unexpected error occurred. Please try again.', 'hyoka')
+                        : __('An unexpected error occurred. Please try again.', 'hyoka-product-reviews')
                 ),
             ];
         }

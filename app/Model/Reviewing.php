@@ -227,6 +227,8 @@ class Reviewing
 
     public static function clearReviewCache(int $product_id = 0): void
     {
+        Review::clearRequestCaches();
+
         if (function_exists('wp_cache_supports') && wp_cache_supports('flush_group')) {
             wp_cache_flush_group('HYOKA_reviews_v2');
         } elseif (function_exists('wp_cache_flush_group')) {

@@ -70,7 +70,7 @@ class ImportRecord
         $content_json = Reviewing::encodeReviewContent([
             'text'   => $is_store ? '' : $body,
             'title'  => (string) ($normalized['title'] ?? ''),
-            'author' => $author !== '' ? $author : __('Imported reviewer', 'hyoka'),
+            'author' => $author !== '' ? $author : __('Imported reviewer', 'hyoka-product-reviews'),
         ]);
 
         $media = [];

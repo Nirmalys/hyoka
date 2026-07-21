@@ -33,11 +33,11 @@ $hyoka_avg_rating_formatted = number_format($hyoka_avg_rating, 1);
         <span class="HYOKA-rating-text"><?php echo esc_html($hyoka_avg_rating_formatted); ?> ★ (<?php echo esc_html((string) $hyoka_review_count); ?>)</span>
         <div class="HYOKA-verified-badge-top">
             <span class="HYOKA-verified-icon">✓</span>
-            <span class="HYOKA-verified-text"><?php esc_html_e('Verified', 'hyoka'); ?></span>
+            <span class="HYOKA-verified-text"><?php esc_html_e('Verified', 'hyoka-product-reviews'); ?></span>
         </div>
     </div>
     <div class="HYOKA-review-cta-inline" style="margin-top: 1.5rem;">
-        <button type="button" class="HYOKA-submit-button HYOKA-open-review-form"><?php esc_html_e('Write a review', 'hyoka'); ?></button>
+        <button type="button" class="HYOKA-submit-button HYOKA-open-review-form"><?php esc_html_e('Write a review', 'hyoka-product-reviews'); ?></button>
     </div>
 </div>
 

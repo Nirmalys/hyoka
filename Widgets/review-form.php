@@ -12,10 +12,10 @@ $hyoka_mock_reviews = $mock_reviews ?? [];
 $hyoka_show_title = ! isset($hyoka_style['show_widget_title']) || ! empty($hyoka_style['show_widget_title']);
 $hyoka_widget_title = ($hyoka_style['widget_title'] ?? '') !== ''
     ? (string) $hyoka_style['widget_title']
-    : __('Customer Reviews', 'hyoka');
+    : __('Customer Reviews', 'hyoka-product-reviews');
 $hyoka_widget_subtitle = (string) ($hyoka_style['widget_subtitle'] ?? '');
-$hyoka_write_btn = (string) ($hyoka_style['write_review_button_text'] ?? __('Write a review', 'hyoka'));
-$hyoka_reply_author = (string) ($hyoka_style['reply_author_name'] ?? __('Store Reply', 'hyoka'));
+$hyoka_write_btn = (string) ($hyoka_style['write_review_button_text'] ?? __('Write a review', 'hyoka-product-reviews'));
+$hyoka_reply_author = (string) ($hyoka_style['reply_author_name'] ?? __('Store Reply', 'hyoka-product-reviews'));
 $hyoka_show_date = ! isset($hyoka_style['show_review_date']) || ! empty($hyoka_style['show_review_date']);
 $hyoka_show_product = ! isset($hyoka_style['show_product_name']) || ! empty($hyoka_style['show_product_name']);
 $hyoka_product_id = $current_product_id ?? 0;
@@ -55,7 +55,7 @@ $hyoka_stats = $review_stats ?? [
             </div>
             <div class="HYOKA-total-count"><?php
                                             /* translators: %d: total number of reviews. */
-                                            printf(esc_html__('Based on %d reviews', 'hyoka'), (int) $hyoka_stats['count']);
+                                            printf(esc_html__('Based on %d reviews', 'hyoka-product-reviews'), (int) $hyoka_stats['count']);
                                             ?></div>
         </div>
         <div class="HYOKA-histogram">
@@ -65,7 +65,7 @@ $hyoka_stats = $review_stats ?? [
                 <div class="HYOKA-histogram-row" data-star="<?php echo esc_attr((string) $hyoka_star); ?>">
                     <span class="HYOKA-star-label"><?php
                                                     /* translators: %d: star rating from 1 to 5. */
-                                                    printf(esc_html__('%d stars', 'hyoka'), (int) $hyoka_star);
+                                                    printf(esc_html__('%d stars', 'hyoka-product-reviews'), (int) $hyoka_star);
                                                     ?></span>
                     <div class="HYOKA-bar-container">
                         <div class="HYOKA-bar-fill" style="width: <?php echo esc_attr($hyoka_percentage); ?>%;"></div>
@@ -77,7 +77,7 @@ $hyoka_stats = $review_stats ?? [
     </div>
 
     <div class="HYOKA-review-cta">
-        <p><?php esc_html_e('Share your thoughts with other customers', 'hyoka'); ?></p>
+        <p><?php esc_html_e('Share your thoughts with other customers', 'hyoka-product-reviews'); ?></p>
         <button type="button" class="HYOKA-submit-button HYOKA-open-review-form"><?php echo esc_html($hyoka_write_btn); ?></button>
     </div>
 
@@ -92,7 +92,7 @@ $hyoka_stats = $review_stats ?? [
         <h4 id="HYOKA-other-products-title">
             <?php
             /* translators: %d: total number of reviews. */
-            echo esc_html(sprintf(__('Recent Reviews (%d)', 'hyoka'), $hyoka_reviews_total));
+            echo esc_html(sprintf(__('Recent Reviews (%d)', 'hyoka-product-reviews'), $hyoka_reviews_total));
             ?>
         </h4>
     </div>
@@ -132,14 +132,14 @@ $hyoka_stats = $review_stats ?? [
                     <?php endif; ?>
 
                     <div class="HYOKA-review-actions">
-                        <button type="button" class="HYOKA-action-btn HYOKA-like-btn" title="<?php esc_attr_e('Helpful', 'hyoka'); ?>">
+                        <button type="button" class="HYOKA-action-btn HYOKA-like-btn" title="<?php esc_attr_e('Helpful', 'hyoka-product-reviews'); ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M7 10v12" />
                                 <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2.83a2 2 0 0 0 1.74-1l.59-1.03a4.01 4.01 0 0 1 7.18 1.91V11.23Z" />
                             </svg>
                             <span><?php echo esc_html($hyoka_review['likes'] ?? '0'); ?></span>
                         </button>
-                        <button type="button" class="HYOKA-action-btn HYOKA-comment-btn" aria-label="<?php esc_attr_e('Open discussion', 'hyoka'); ?>">
+                        <button type="button" class="HYOKA-action-btn HYOKA-comment-btn" aria-label="<?php esc_attr_e('Open discussion', 'hyoka-product-reviews'); ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                             </svg>
@@ -149,16 +149,16 @@ $hyoka_stats = $review_stats ?? [
                 </article>
             <?php endforeach; ?>
         <?php else : ?>
-            <p class="HYOKA-empty-reviews"><?php esc_html_e('No reviews available yet.', 'hyoka'); ?></p>
+            <p class="HYOKA-empty-reviews"><?php esc_html_e('No reviews available yet.', 'hyoka-product-reviews'); ?></p>
         <?php endif; ?>
     </div>
 
     <div class="HYOKA-pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;">
-        <button type="button" class="HYOKA-secondary-button HYOKA-prev-page" disabled><?php esc_html_e('Previous', 'hyoka'); ?></button>
+        <button type="button" class="HYOKA-secondary-button HYOKA-prev-page" disabled><?php esc_html_e('Previous', 'hyoka-product-reviews'); ?></button>
         <span class="HYOKA-page-info"><?php
                                         /* translators: %d: current page number. */
-                                        printf(esc_html__('Page %d', 'hyoka'), 1);
+                                        printf(esc_html__('Page %d', 'hyoka-product-reviews'), 1);
                                         ?></span>
-        <button type="button" class="HYOKA-secondary-button HYOKA-next-page"<?php if ($hyoka_reviews_per_page >= $hyoka_reviews_total) { echo ' disabled'; } ?>><?php esc_html_e('Next', 'hyoka'); ?></button>
+        <button type="button" class="HYOKA-secondary-button HYOKA-next-page"<?php if ($hyoka_reviews_per_page >= $hyoka_reviews_total) { echo ' disabled'; } ?>><?php esc_html_e('Next', 'hyoka-product-reviews'); ?></button>
     </div>
 </div>

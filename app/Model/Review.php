@@ -19,6 +19,22 @@ class Review
 {
     protected $hyoka_reviews_table;
 
+    /** @var array<string, string> Request-scoped prepared WHERE SQL (avoids duplicate search lookups). */
+    private static $prepared_where_cache = [];
+
+    /** @var array<string, int[]> Request-scoped product IDs matched by search term. */
+    private static $search_product_ids_cache = [];
+
+    /**
+     * Clear request-scoped memoization (PHP-FPM ends the request automatically;
+     * call this between jobs in long-running CLI / workers if needed).
+     */
+    public static function clearRequestCaches(): void
+    {
+        self::$prepared_where_cache      = [];
+        self::$search_product_ids_cache = [];
+    }
+
     public function __construct()
     {
         $this->hyoka_reviews_table = self::getTableName();
@@ -76,6 +92,8 @@ class Review
             return false;
         }
 
+        Reviewing::clearReviewCache(absint($data['product_id'] ?? 0));
+
         return (int) $wpdb->insert_id;
     }
 
@@ -104,6 +122,16 @@ class Review
     {
         global $wpdb;
 
+        $email_key = sanitize_text_field($email_key);
+        $cache_key = 'HYOKA_meta_' . md5($email_key);
+        $cached    = wp_cache_get($cache_key, 'HYOKA_reviews_v2');
+        if ($cached === 'none') {
+            return null;
+        }
+        if (is_array($cached)) {
+            return $cached;
+        }
+
         $table = self::getTableName();
         // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $row = $wpdb->get_row(
@@ -116,7 +144,23 @@ class Review
         );
         // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-        return is_array($row) ? $row : null;
+        if (! is_array($row)) {
+            wp_cache_set($cache_key, 'none', 'HYOKA_reviews_v2', 5 * MINUTE_IN_SECONDS);
+
+            return null;
+        }
+
+        wp_cache_set($cache_key, $row, 'HYOKA_reviews_v2', HOUR_IN_SECONDS);
+
+        return $row;
+    }
+
+    /**
+     * Drop cached settings/meta row for an email key.
+     */
+    private static function clearSettingsEmailCache(string $email_key): void
+    {
+        wp_cache_delete('HYOKA_meta_' . md5(sanitize_text_field($email_key)), 'HYOKA_reviews_v2');
     }
 
     /**
@@ -139,6 +183,7 @@ class Review
             ) !== false;
 
             if ($success) {
+                self::clearSettingsEmailCache($email_key);
                 Reviewing::clearReviewCache();
             }
 
@@ -152,6 +197,7 @@ class Review
 
         $success = $this->create($row) !== false;
         if ($success) {
+            self::clearSettingsEmailCache($email_key);
             Reviewing::clearReviewCache();
         }
 
@@ -162,13 +208,14 @@ class Review
     {
         global $wpdb;
 
-        $parts = $this->buildWhereParts($args);
+        $where = $this->buildPreparedWhereSql($args);
         $table = self::getTableName();
-        $query = "SELECT COUNT(*) FROM {$table} WHERE " . $parts['where'];
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); WHERE/ORDER fragments are plugin-controlled placeholders; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
-        $count = (int) $wpdb->get_var($wpdb->prepare($query, ...$parts['params']));
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); $where is assembled only from $wpdb->prepare() fragments (no raw user SQL).
+        $count = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table} WHERE {$where}"
+        );
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         return $count;
     }
@@ -319,7 +366,7 @@ class Review
         ];
         $args = wp_parse_args($args, $defaults);
 
-        $parts    = $this->buildWhereParts($args);
+        $where    = $this->buildPreparedWhereSql($args);
         $per_page = max(1, absint($args['per_page'] ?? 20));
         $offset   = max(0, (absint($args['page']) - 1) * $per_page);
 
@@ -334,19 +381,19 @@ class Review
         $order       = strtoupper((string) $args['order']) === 'ASC' ? 'ASC' : 'DESC';
 
         $table = self::getTableName();
-        $query = "SELECT * FROM {$table} WHERE " . $parts['where']
-            . ' ORDER BY ' . $orderby . ' ' . $order
-            . ' LIMIT %d OFFSET %d';
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); WHERE/ORDER fragments are plugin-controlled placeholders; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
+        // Prepare LIMIT/OFFSET alone so a second prepare() cannot re-parse % in LIKE literals
+        // already embedded in $where by buildPreparedWhereSql().
+        $limit_sql = $wpdb->prepare('LIMIT %d OFFSET %d', $per_page, $offset);
+
+        // $where is already fully prepared (values embedded via $wpdb->prepare per clause).
+        // ORDER BY uses an allowlisted identifier. LIMIT/OFFSET come from prepare() above.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); $where from buildPreparedWhereSql(); $orderby/$order are allowlisted; $limit_sql from $wpdb->prepare().
         $rows = $wpdb->get_results(
-            $wpdb->prepare(
-                $query,
-                ...array_merge($parts['params'], [$per_page, $offset])
-            ),
+            "SELECT * FROM {$table} WHERE {$where} ORDER BY {$orderby} {$order} {$limit_sql}",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         return is_array($rows) ? $rows : [];
     }
@@ -354,17 +401,30 @@ class Review
     public function incrementLikes(int $id): bool
     {
         global $wpdb;
+
+        $id    = absint($id);
         $table = self::getTableName();
+
+        // One query: bump likes and capture product_id via LAST_INSERT_ID(expr) for cache clear.
         // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
         $result = $wpdb->query(
             $wpdb->prepare(
-                "UPDATE {$table} SET likes = COALESCE(likes, 0) + 1 WHERE id = %d",
-                absint($id)
+                "UPDATE {$table}
+                SET likes = COALESCE(likes, 0) + 1,
+                    product_id = LAST_INSERT_ID(product_id)
+                WHERE id = %d",
+                $id
             )
         );
         // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-        return $result !== false && (int) $result > 0;
+        if ($result === false || (int) $result <= 0) {
+            return false;
+        }
+
+        Reviewing::clearReviewCache(absint($wpdb->insert_id));
+
+        return true;
     }
 
     /**
@@ -398,26 +458,54 @@ class Review
             return false;
         }
 
+        $id          = absint($id);
+        $existing    = $this->findById($id);
+        $old_product = is_array($existing) ? absint($existing['product_id'] ?? 0) : 0;
+
         $data['updated_at'] = $data['updated_at'] ?? current_time('mysql', true);
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $result = $wpdb->update(
             $this->hyoka_reviews_table,
             $data,
-            ['id' => absint($id)],
+            ['id' => $id],
             $this->columnFormats($data),
             ['%d']
         );
 
-        return $result !== false;
+        if ($result === false) {
+            return false;
+        }
+
+        $new_product = isset($data['product_id']) ? absint($data['product_id']) : $old_product;
+        Reviewing::clearReviewCache($new_product);
+        if ($old_product > 0 && $old_product !== $new_product) {
+            Reviewing::clearReviewCache($old_product);
+        }
+
+        return true;
     }
 
     public function delete(int $id): bool
     {
         global $wpdb;
 
+        $id  = absint($id);
+        $row = $this->findById($id);
+
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-        return $wpdb->delete($this->hyoka_reviews_table, ['id' => absint($id)], ['%d']) !== false;
+        $result = $wpdb->delete($this->hyoka_reviews_table, ['id' => $id], ['%d']);
+        if ($result === false) {
+            return false;
+        }
+
+        if (is_array($row)) {
+            Reviewing::clearReviewCache(absint($row['product_id'] ?? 0));
+        } else {
+            Reviewing::clearReviewCache();
+        }
+
+        return true;
     }
 
     public const WIDGET_SETTINGS_EMAIL = 'widget_settings';
@@ -513,122 +601,219 @@ class Review
     }
 
     /**
+     * Args that affect the WHERE clause (excludes pagination / ordering).
+     *
      * @param array<string, mixed> $args
-     * @return array{where: string, params: array<int, mixed>}
+     * @return array<string, mixed>
      */
-    private function buildWhereParts(array $args): array
+    private function whereCacheArgs(array $args): array
+    {
+        return [
+            'status'      => (string) ($args['status'] ?? ''),
+            'product_id'  => absint($args['product_id'] ?? 0),
+            'product_ids' => array_values(array_unique(array_filter(array_map('absint', (array) ($args['product_ids'] ?? []))))),
+            'rating'      => absint($args['rating'] ?? 0),
+            'search'      => trim((string) ($args['search'] ?? '')),
+            'view'        => sanitize_key((string) ($args['view'] ?? '')),
+            'media_type'  => sanitize_key((string) ($args['media_type'] ?? '')),
+        ];
+    }
+
+    /**
+     * Product / variation IDs matching a title or SKU search (cached per request + object cache).
+     *
+     * @return int[]
+     */
+    private function findProductIdsMatchingSearch(string $search_term): array
     {
         global $wpdb;
 
-        $conditions = ['email NOT IN (%s, %s)'];
-        $params     = self::systemEmails();
-
-        if (! empty($args['status']) && strtolower((string) $args['status']) !== 'all') {
-            $conditions[] = 'status = %s';
-            $params[]       = self::normalizeStatus((string) $args['status']);
+        $search_term = trim($search_term);
+        if ($search_term === '') {
+            return [];
         }
-        if (! empty($args['product_ids']) && is_array($args['product_ids'])) {
-            $ids = array_values(array_unique(array_filter(array_map('absint', $args['product_ids']))));
-            if (count($ids) > 1) {
-                $placeholders = implode(',', array_fill(0, count($ids), '%d'));
-                $conditions[] = "product_id IN ({$placeholders})";
-                $params       = array_merge($params, $ids);
-            } elseif (count($ids) === 1) {
-                $conditions[] = 'product_id = %d';
-                $params[]     = $ids[0];
+
+        $request_key = md5(strtolower($search_term));
+        if (isset(self::$search_product_ids_cache[$request_key])) {
+            return self::$search_product_ids_cache[$request_key];
+        }
+
+        $cache_key = 'HYOKA_search_pids_' . $request_key;
+        $cached    = wp_cache_get($cache_key, 'HYOKA_reviews_v2');
+        if (is_array($cached)) {
+            self::$search_product_ids_cache[$request_key] = $cached;
+
+            return $cached;
+        }
+
+        $like = '%' . $wpdb->esc_like($search_term) . '%';
+
+        // No WP_Query equivalent for title + SKU product ID lookup; values bound via prepare().
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $title_ids = array_map(
+            'absint',
+            (array) $wpdb->get_col(
+                $wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts}
+                    WHERE post_type IN ('product', 'product_variation')
+                    AND post_title LIKE %s",
+                    $like
+                )
+            )
+        );
+
+        $sku_ids = array_map(
+            'absint',
+            (array) $wpdb->get_col(
+                $wpdb->prepare(
+                    "SELECT post_id FROM {$wpdb->postmeta}
+                    WHERE meta_key = '_sku' AND meta_value LIKE %s",
+                    $like
+                )
+            )
+        );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+        $ids = array_values(array_unique(array_filter(array_merge($title_ids, $sku_ids))));
+
+        self::$search_product_ids_cache[$request_key] = $ids;
+        wp_cache_set($cache_key, $ids, 'HYOKA_reviews_v2', 5 * MINUTE_IN_SECONDS);
+
+        return $ids;
+    }
+
+    /**
+     * Build a WHERE clause from plugin-controlled SQL fragments.
+     *
+     * WordPress.org / wpdb pattern: every dynamic value is bound with $wpdb->prepare()
+     * on its own fragment. The returned string contains no unbound placeholders and
+     * never interpolates raw user input into SQL identifiers or operators.
+     *
+     * Results are memoized for the request so countMany() + findMany() share one build
+     * (and one product-title/SKU lookup) during pagination.
+     *
+     * @param array<string, mixed> $args
+     */
+    private function buildPreparedWhereSql(array $args): string
+    {
+        global $wpdb;
+
+        $where_args = $this->whereCacheArgs($args);
+        $memo_key   = md5((string) wp_json_encode($where_args));
+        if (isset(self::$prepared_where_cache[$memo_key])) {
+            return self::$prepared_where_cache[$memo_key];
+        }
+
+        $clauses = [];
+
+        $emails    = self::systemEmails();
+        $clauses[] = $wpdb->prepare(
+            'email NOT IN (%s, %s)',
+            $emails[0],
+            $emails[1]
+        );
+
+        if ($where_args['status'] !== '' && strtolower($where_args['status']) !== 'all') {
+            $clauses[] = $wpdb->prepare(
+                'status = %s',
+                self::normalizeStatus($where_args['status'])
+            );
+        }
+
+        if ($where_args['product_ids'] !== []) {
+            $ids          = $where_args['product_ids'];
+            $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+            // Dynamic IN (%d,%d,...) placeholder list — WordPress-recommended pattern; PHPCS cannot analyze it.
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+            $clauses[] = $wpdb->prepare(
+                "product_id IN ($placeholders)",
+                ...$ids
+            );
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+        } elseif ($where_args['product_id'] > 0) {
+            $clauses[] = $wpdb->prepare('product_id = %d', $where_args['product_id']);
+        }
+
+        if ($where_args['rating'] > 0) {
+            $clauses[] = $wpdb->prepare('rating = %d', $where_args['rating']);
+        }
+
+        if ($where_args['search'] !== '') {
+            $search         = '%' . $wpdb->esc_like($where_args['search']) . '%';
+            $search_clauses = [
+                $wpdb->prepare('email LIKE %s', $search),
+                $wpdb->prepare('content LIKE %s', $search),
+                $wpdb->prepare('store_review LIKE %s', $search),
+                $wpdb->prepare('question LIKE %s', $search),
+            ];
+
+            $matched_product_ids = $this->findProductIdsMatchingSearch($where_args['search']);
+            if ($matched_product_ids !== []) {
+                $placeholders = implode(',', array_fill(0, count($matched_product_ids), '%d'));
+                // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+                $search_clauses[] = $wpdb->prepare(
+                    "product_id IN ($placeholders)",
+                    ...$matched_product_ids
+                );
+                // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
             }
-        } elseif (! empty($args['product_id'])) {
-            $conditions[] = 'product_id = %d';
-            $params[]     = absint($args['product_id']);
+
+            $clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
         }
-        if (! empty($args['rating'])) {
-            $conditions[] = 'rating = %d';
-            $params[]     = absint($args['rating']);
-        }
-        if (! empty($args['search'])) {
-            $search_term = trim((string) $args['search']);
-            if ($search_term !== '') {
-                $search        = '%' . $wpdb->esc_like($search_term) . '%';
-                $search_parts  = [
-                    'email LIKE %s',
-                    'content LIKE %s',
-                    'store_review LIKE %s',
-                    'question LIKE %s',
-                ];
-                $search_params = [$search, $search, $search, $search];
 
-                $product_ids = array_map(
-                    'absint',
-                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                    (array) $wpdb->get_col(
-                        $wpdb->prepare(
-                            "SELECT ID FROM {$wpdb->posts}
-                            WHERE post_type IN ('product', 'product_variation')
-                            AND post_title LIKE %s",
-                            $search
-                        )
-                    )
-                );
-
-                $sku_product_ids = array_map(
-                    'absint',
-                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                    (array) $wpdb->get_col(
-                        $wpdb->prepare(
-                            "SELECT post_id FROM {$wpdb->postmeta}
-                            WHERE meta_key = '_sku' AND meta_value LIKE %s",
-                            $search
-                        )
-                    )
-                );
-
-                $matched_product_ids = array_values(
-                    array_unique(array_filter(array_merge($product_ids, $sku_product_ids)))
-                );
-
-                if ($matched_product_ids !== []) {
-                    $placeholders  = implode(',', array_fill(0, count($matched_product_ids), '%d'));
-                    $search_parts[] = "product_id IN ({$placeholders})";
-                    $search_params  = array_merge($search_params, $matched_product_ids);
-                }
-
-                $conditions[] = '(' . implode(' OR ', $search_parts) . ')';
-                $params       = array_merge($params, $search_params);
-            }
-        }
-        if (! empty($args['view'])) {
-            $view = sanitize_key((string) $args['view']);
+        if ($where_args['view'] !== '') {
+            $view = $where_args['view'];
             if ($view === 'questions') {
-                $conditions[] = 'question != %s AND (reply IS NULL OR reply = %s)';
-                $params       = array_merge($params, ['', '']);
+                $clauses[] = $wpdb->prepare(
+                    'question != %s AND (reply IS NULL OR reply = %s)',
+                    '',
+                    ''
+                );
             } elseif ($view === 'store_reviews') {
-                $conditions[] = '(COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))';
-                $params       = array_merge($params, self::SQL_STORE_REVIEWS_PARAMS);
+                // Variadic constant expansion — PHPCS cannot count ...self::SQL_* replacements.
+                // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+                $clauses[] = $wpdb->prepare(
+                    '(COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))',
+                    ...self::SQL_STORE_REVIEWS_PARAMS
+                );
+                // phpcs:enable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
             } elseif ($view === 'replies') {
-                $conditions[] = 'reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)';
-                $params       = array_merge($params, self::storeRepliesScopeParams());
+                // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+                $clauses[] = $wpdb->prepare(
+                    'reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)',
+                    ...self::storeRepliesScopeParams()
+                );
+                // phpcs:enable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
             }
         } else {
-            $conditions[] = 'product_id > %d AND (question IS NULL OR question = %s)';
-            $params       = array_merge($params, self::SQL_PRODUCT_REVIEWS_PARAMS);
+            // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+            $clauses[] = $wpdb->prepare(
+                'product_id > %d AND (question IS NULL OR question = %s)',
+                ...self::SQL_PRODUCT_REVIEWS_PARAMS
+            );
+            // phpcs:enable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         }
-        if (! empty($args['media_type'])) {
-            $type = sanitize_key((string) $args['media_type']);
+
+        if ($where_args['media_type'] !== '') {
+            $type = $where_args['media_type'];
             if ($type === 'visual') {
-                $conditions[] = '(media LIKE %s OR media LIKE %s)';
-                $params[]     = '%' . $wpdb->esc_like('"type":"image"') . '%';
-                $params[]     = '%' . $wpdb->esc_like('"type":"video"') . '%';
-            } else {
-                $search_media = '%' . $wpdb->esc_like('"type":"' . $type . '"') . '%';
-                $conditions[] = 'media LIKE %s';
-                $params[]     = $search_media;
+                $clauses[] = $wpdb->prepare(
+                    '(media LIKE %s OR media LIKE %s)',
+                    '%' . $wpdb->esc_like('"type":"image"') . '%',
+                    '%' . $wpdb->esc_like('"type":"video"') . '%'
+                );
+            } elseif (in_array($type, ['image', 'video'], true)) {
+                $clauses[] = $wpdb->prepare(
+                    'media LIKE %s',
+                    '%' . $wpdb->esc_like('"type":"' . $type . '"') . '%'
+                );
             }
         }
 
-        return [
-            'where'  => implode(' AND ', $conditions),
-            'params' => $params,
-        ];
+        $sql = implode(' AND ', $clauses);
+        self::$prepared_where_cache[$memo_key] = $sql;
+
+        return $sql;
     }
 
     // —— Plugin settings row (hyoka_reviews.email = plugin_settings) ——
@@ -931,55 +1116,64 @@ class Review
         }
 
         $system_emails = self::systemEmails();
-        $where         = 'status = %s AND email NOT IN (%s, %s) AND rating BETWEEN 1 AND 5';
-        $params        = array_merge([$status], $system_emails);
+        $clauses       = [
+            $wpdb->prepare(
+                'status = %s AND email NOT IN (%s, %s) AND rating BETWEEN 1 AND 5',
+                $status,
+                $system_emails[0],
+                $system_emails[1]
+            ),
+        ];
 
         if ($use_multi) {
             $placeholders = implode(',', array_fill(0, count($related), '%d'));
-            $where       .= ' AND product_id IN (' . $placeholders . ')';
-            $params       = array_merge($params, $related);
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+            $clauses[] = $wpdb->prepare(
+                "product_id IN ($placeholders)",
+                ...$related
+            );
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         } elseif ($product_id > 0) {
-            $where   .= ' AND product_id = %d';
-            $params[] = $product_id;
+            $clauses[] = $wpdb->prepare('product_id = %d', $product_id);
         }
 
         if ($product_only) {
-            $where  .= ' AND product_id > %d AND (question IS NULL OR question = %s)';
-            $params  = array_merge($params, self::SQL_PRODUCT_REVIEWS_PARAMS);
+            // phpcs:disable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+            $clauses[] = $wpdb->prepare(
+                'product_id > %d AND (question IS NULL OR question = %s)',
+                ...self::SQL_PRODUCT_REVIEWS_PARAMS
+            );
+            // phpcs:enable WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         }
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table comes from getTableName() ($wpdb->prefix + plugin-owned table); dynamic $where placeholders are assembled from plugin-controlled fragments; SQL values are parameterized with $wpdb->prepare(); custom tables require direct database queries.
-        $aggregate = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT AVG(rating) as average, COUNT(*) as count FROM {$table} WHERE " . $where,
-                ...$params
-            ),
-            ARRAY_A
-        );
+        $where = implode(' AND ', $clauses);
+
+        // Single GROUP BY: derive histogram, count, and average in PHP (MySQL 5.x / MariaDB safe).
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from getTableName(); $where is assembled only from $wpdb->prepare() fragments.
         $histogram_rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT rating, COUNT(*) as count FROM {$table} WHERE " . $where . ' GROUP BY rating',
-                ...$params
-            ),
+            "SELECT rating, COUNT(*) as count FROM {$table} WHERE {$where} GROUP BY rating",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         $histogram = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        $total     = 0;
+        $weighted  = 0.0;
         if (is_array($histogram_rows)) {
             foreach ($histogram_rows as $row) {
                 $r = (int) $row['rating'];
+                $c = (int) $row['count'];
                 if (isset($histogram[$r])) {
-                    $histogram[$r] = (int) $row['count'];
+                    $histogram[$r] = $c;
+                    $total        += $c;
+                    $weighted     += $r * $c;
                 }
             }
         }
 
         $data = [
-            'average'   => is_array($aggregate) && $aggregate['average'] !== null
-                ? round((float) $aggregate['average'], 1)
-                : 0,
-            'count'     => (int) (is_array($aggregate) ? ($aggregate['count'] ?? 0) : 0),
+            'average'   => $total > 0 ? round($weighted / $total, 1) : 0,
+            'count'     => $total,
             'histogram' => $histogram,
         ];
 

@@ -152,16 +152,16 @@ class UserReplies
         $email     = sanitize_email(trim($email));
 
         if ($review_id <= 0) {
-            return ['ok' => false, 'message' => __('Invalid review.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Invalid review.', 'hyoka-product-reviews')];
         }
         if ($author === '') {
-            return ['ok' => false, 'message' => __('Please enter your name.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Please enter your name.', 'hyoka-product-reviews')];
         }
         if ($content === '') {
-            return ['ok' => false, 'message' => __('Please write a reply.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Please write a reply.', 'hyoka-product-reviews')];
         }
         if (mb_strlen($content) > 2000) {
-            return ['ok' => false, 'message' => __('Reply is too long.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Reply is too long.', 'hyoka-product-reviews')];
         }
 
         $loaded = self::loadReview($review_id);
@@ -171,12 +171,12 @@ class UserReplies
 
         $row = $loaded['row'];
         if (Review::normalizeStatus((string) ($row['status'] ?? '')) !== 'approved') {
-            return ['ok' => false, 'message' => __('You can only reply to published reviews.', 'hyoka')];
+            return ['ok' => false, 'message' => __('You can only reply to published reviews.', 'hyoka-product-reviews')];
         }
 
         $status = Moderation::resolveStatus($content, ['is_user_reply' => true]);
         if ($status === 'spam') {
-            return ['ok' => false, 'message' => __('Your reply could not be posted.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Your reply could not be posted.', 'hyoka-product-reviews')];
         }
 
         $settings = self::settings($row);
@@ -197,7 +197,7 @@ class UserReplies
         $settings['user_replies'][] = $reply;
 
         if (! self::write($review_id, $settings)) {
-            return ['ok' => false, 'message' => __('Failed to save your reply.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Failed to save your reply.', 'hyoka-product-reviews')];
         }
 
         $row['settings'] = wp_json_encode($settings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -209,8 +209,8 @@ class UserReplies
         return [
             'ok'            => true,
             'message'       => $status === 'approved'
-                ? __('Reply posted.', 'hyoka')
-                : __('Thanks! Your reply will appear after moderation.', 'hyoka'),
+                ? __('Reply posted.', 'hyoka-product-reviews')
+                : __('Thanks! Your reply will appear after moderation.', 'hyoka-product-reviews'),
             'reply'         => $formatted,
             'replies_count' => self::approvedCount($row),
             'product_id'    => absint($row['product_id'] ?? 0),
@@ -227,7 +227,7 @@ class UserReplies
         $status    = Review::normalizeStatus($status);
 
         if ($review_id <= 0 || $reply_id === '') {
-            return ['ok' => false, 'message' => __('Invalid reply.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Invalid reply.', 'hyoka-product-reviews')];
         }
 
         $loaded = self::loadReview($review_id);
@@ -238,7 +238,7 @@ class UserReplies
         $settings = self::settings($loaded['row']);
         $replies  = $settings['user_replies'] ?? [];
         if (! is_array($replies) || $replies === []) {
-            return ['ok' => false, 'message' => __('Reply not found.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Reply not found.', 'hyoka-product-reviews')];
         }
 
         $found = false;
@@ -252,17 +252,17 @@ class UserReplies
         }
 
         if (! $found) {
-            return ['ok' => false, 'message' => __('Reply not found.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Reply not found.', 'hyoka-product-reviews')];
         }
 
         $settings['user_replies'] = $replies;
         if (! self::write($review_id, $settings)) {
-            return ['ok' => false, 'message' => __('Failed to update reply status.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Failed to update reply status.', 'hyoka-product-reviews')];
         }
 
         return [
             'ok'         => true,
-            'message'    => __('Reply status updated.', 'hyoka'),
+            'message'    => __('Reply status updated.', 'hyoka-product-reviews'),
             'product_id' => absint($loaded['row']['product_id'] ?? 0),
         ];
     }
@@ -275,12 +275,12 @@ class UserReplies
         $model = new UserReply();
         $row   = $model->findReviewById($review_id);
         if (! is_array($row)) {
-            return ['ok' => false, 'message' => __('Review not found. It may have been removed — please refresh the page.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Review not found. It may have been removed — please refresh the page.', 'hyoka-product-reviews')];
         }
 
         $email = (string) ($row['email'] ?? '');
         if (Review::isSystemEmail($email)) {
-            return ['ok' => false, 'message' => __('This review cannot receive replies.', 'hyoka')];
+            return ['ok' => false, 'message' => __('This review cannot receive replies.', 'hyoka-product-reviews')];
         }
 
         return [

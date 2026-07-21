@@ -120,7 +120,26 @@
     }
 
     function escapeHtml(value) {
-        return $('<div/>').text(value || '').html();
+        return $('<div/>').text(value == null ? '' : String(value)).html();
+    }
+
+    /**
+     * Allow only http(s) and relative URLs for href/src attributes.
+     */
+    function safeUrl(value) {
+        var url = String(value || '').trim();
+        if (!url || url === '#') {
+            return '#';
+        }
+        if (/^(https?:|\/)/i.test(url) && !/^\s*javascript:/i.test(url)) {
+            return escapeHtml(url);
+        }
+        return '#';
+    }
+
+    function toNonNegInt(value, fallback) {
+        var n = parseInt(value, 10);
+        return isFinite(n) && n >= 0 ? n : (fallback || 0);
     }
 
     // --- Interaction Helpers ---
@@ -379,12 +398,12 @@
                     } else {
                         var msg = (data && data.data && data.data.message)
                             ? data.data.message
-                            : (data && data.message ? data.message : 'Upload failed for ' + escapeHtml(file.name));
+                            : (data && data.message ? data.message : 'Upload failed for ' + file.name);
                         reject(msg);
                     }
                 },
                 error: function(xhr) {
-                    var errorMsg = 'Network error while uploading ' + escapeHtml(file.name);
+                    var errorMsg = 'Network error while uploading ' + file.name;
                     if (xhr.status === 413) {
                         errorMsg = 'File too large for server limits.';
                     }
@@ -604,7 +623,7 @@
                         $item
                             .removeClass('HYOKA-upload-pending')
                             .addClass('HYOKA-upload-error')
-                            .html(' ' + errMsg);
+                            .html(' ' + escapeHtml(errMsg));
                     })
                     .finally(function() {
                         uploadsPending--;
@@ -958,10 +977,13 @@
 
                 var rows = '';
                 reviews.forEach(function(review) {
-                    var rating     = Math.max(1, parseInt(review.rating || 0, 10));
+                    var rating     = Math.max(1, Math.min(5, parseInt(review.rating || 0, 10) || 1));
                     var stars      = '★'.repeat(rating) + '☆'.repeat(5 - rating);
                     var author     = escapeHtml(review.author || 'Anonymous');
-                    var reviewDate = review.date || (review.created_at ? review.created_at.split(' ')[0] : '');
+                    var reviewDate = escapeHtml(
+                        review.date || (review.created_at ? String(review.created_at).split(' ')[0] : '')
+                    );
+                    var reviewId   = toNonNegInt(review.id, 0);
                     
                     var replyHtml = '';
                     if (review.reply) {
@@ -973,31 +995,33 @@
                     var productLinkHtml = '';
                     if (review.product_id && review.product_id != productId && review.product_title) {
                         productLinkHtml = '<div class="HYOKA-review-product-link">' +
-                            (review.product_image ? '<img src="' + escapeHtml(review.product_image) + '" alt="product" />' : '') +
-                            '<div><a href="' + escapeHtml(review.product_link || '#') + '">' + escapeHtml(review.product_title) + '</a></div></div>';
+                            (review.product_image ? '<img src="' + safeUrl(review.product_image) + '" alt="product" />' : '') +
+                            '<div><a href="' + safeUrl(review.product_link || '#') + '">' + escapeHtml(review.product_title) + '</a></div></div>';
                     }
 
-                    var isLiked = isReviewLiked(review.id);
+                    var isLiked = isReviewLiked(reviewId);
                     var likedClass = isLiked ? ' is-liked' : '';
+                    var likesCount = toNonNegInt(review.likes, 0);
+                    var repliesCount = toNonNegInt(review.replies_count, 0);
 
                     var socialHtml = '<div class="HYOKA-review-actions">' +
                             '<button type="button" class="HYOKA-action-btn HYOKA-like-btn' + likedClass + '" title="Helpful">' +
                                 '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                                     '<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2.83a2 2 0 0 0 1.74-1l.59-1.03a4.01 4.01 0 0 1 7.18 1.91V11.23Z"/>' +
                                 '</svg>' +
-                                '<span>' + (review.likes || '0') + '</span>' +
+                                '<span>' + likesCount + '</span>' +
                             '</button>' +
                             '<button type="button" class="HYOKA-action-btn HYOKA-comment-btn" aria-label="Open discussion">' +
                                 '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                                     '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' +
                                 '</svg>' +
-                                '<span>' + (review.replies_count || '0') + '</span>' +
+                                '<span>' + repliesCount + '</span>' +
                             '</button>' +
                         '</div>';
 
-                    var userRepliesJson = JSON.stringify(review.user_replies || []).replace(/'/g, '&#39;');
+                    var userRepliesJson = escapeHtml(JSON.stringify(review.user_replies || []));
 
-                    rows += '<article class="HYOKA-review-row" data-id="' + review.id + '" data-user-replies=\'' + userRepliesJson + '\'>' +
+                    rows += '<article class="HYOKA-review-row" data-id="' + reviewId + '" data-user-replies="' + userRepliesJson + '">' +
                         '<div class="HYOKA-review-stars">' + stars + '</div>' +
                         '<div class="HYOKA-review-author"><span class="HYOKA-avatar">' + author.charAt(0).toUpperCase() + '</span>' +
                         '<div><strong>' + author + '</strong><small>' + reviewDate + '</small></div></div>' +

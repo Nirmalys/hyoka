@@ -10,7 +10,8 @@
  * Requires Plugins:  woocommerce
  * Author:            YS Innovations
  * Author URI:        https://ysinnovations.com
- * Text Domain:       hyoka
+ * Text Domain:       hyoka-product-reviews
+ * Domain Path:       /languages
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -21,7 +22,8 @@ define('HYOKA_PLUGIN_FILE', __FILE__);
 define('HYOKA_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('HYOKA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('HYOKA_PLUGIN_NAME', 'Hyoka');
-define('HYOKA_PLUGIN_SLUG', 'hyoka');
+define('HYOKA_PLUGIN_SLUG', 'hyoka-product-reviews');
+define('HYOKA_TEXT_DOMAIN', 'hyoka-product-reviews');
 define('HYOKA_VERSION', '1.0.0');
 define('HYOKA_REQUIREMENTS', [
     'php' => ">=7.4",

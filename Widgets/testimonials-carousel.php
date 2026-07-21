@@ -32,7 +32,7 @@ include __DIR__ . '/partials/carousel-rating-vars.php';
     ?>
 
     <?php if ($hyoka_reviews === []) : ?>
-        <p class="HYOKA-widget-empty"><?php esc_html_e('No approved store reviews to display yet.', 'hyoka'); ?></p>
+        <p class="HYOKA-widget-empty"><?php esc_html_e('No approved store reviews to display yet.', 'hyoka-product-reviews'); ?></p>
     <?php elseif ($hyoka_layout === 'grid') : ?>
         <div class="HYOKA-testimonials-grid">
             <?php foreach ($hyoka_reviews as $hyoka_review) : ?>
@@ -60,12 +60,12 @@ include __DIR__ . '/partials/carousel-rating-vars.php';
             </div>
 
             <div class="HYOKA-carousel-nav">
-                <button type="button" class="HYOKA-nav-prev" title="<?php esc_attr_e('Previous', 'hyoka'); ?>">
+                <button type="button" class="HYOKA-nav-prev" title="<?php esc_attr_e('Previous', 'hyoka-product-reviews'); ?>">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
-                <button type="button" class="HYOKA-nav-next" title="<?php esc_attr_e('Next', 'hyoka'); ?>">
+                <button type="button" class="HYOKA-nav-next" title="<?php esc_attr_e('Next', 'hyoka-product-reviews'); ?>">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>

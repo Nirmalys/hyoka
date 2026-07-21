@@ -437,7 +437,7 @@ class ProductReview
                 $msg = Link::inviteStatusMessage($invite_status);
                 return [
                     'ok'      => false,
-                    'message' => $msg !== '' ? $msg : __('This review link is invalid.', 'hyoka'),
+                    'message' => $msg !== '' ? $msg : __('This review link is invalid.', 'hyoka-product-reviews'),
                 ];
             }
             $invite_resolution = Link::getInviteByToken($invite_plain);
@@ -463,7 +463,7 @@ class ProductReview
             if ($row_product_id <= 0 || $row_product_id !== $product_id) {
                 return [
                     'ok'      => false,
-                    'message' => __('This review link does not match this product.', 'hyoka'),
+                    'message' => __('This review link does not match this product.', 'hyoka-product-reviews'),
                 ];
             }
             $customer_decoded = Customers::parseCustomer($invite_row['customer'] ?? '');
@@ -471,7 +471,7 @@ class ProductReview
             if ($email === '') {
                 return [
                     'ok'      => false,
-                    'message' => __('Missing customer email for this invite.', 'hyoka'),
+                    'message' => __('Missing customer email for this invite.', 'hyoka-product-reviews'),
                 ];
             }
         }
@@ -493,7 +493,7 @@ class ProductReview
         if ($rating < 1 || $rating > 5) {
             return [
                 'ok'      => false,
-                'message' => __('Please choose a star rating (tap 1-5 stars) before submitting.', 'hyoka'),
+                'message' => __('Please choose a star rating (tap 1-5 stars) before submitting.', 'hyoka-product-reviews'),
             ];
         }
 
@@ -501,7 +501,7 @@ class ProductReview
         if ($review === '') {
             return [
                 'ok'      => false,
-                'message' => __('Please fill in all required fields.', 'hyoka'),
+                'message' => __('Please fill in all required fields.', 'hyoka-product-reviews'),
             ];
         }
 
@@ -608,13 +608,13 @@ class ProductReview
         $success_message = $invite_resolution !== null
             ? (
                 $status === 'approved'
-                ? __('Thanks! Your review was submitted and is now visible on the store.', 'hyoka')
-                : __('Thanks! Your review was submitted and will appear on the store after an administrator approves it.', 'hyoka')
+                ? __('Thanks! Your review was submitted and is now visible on the store.', 'hyoka-product-reviews')
+                : __('Thanks! Your review was submitted and will appear on the store after an administrator approves it.', 'hyoka-product-reviews')
             )
             : (
                 $status === 'approved'
-                ? __('Review submitted and approved automatically.', 'hyoka')
-                : __('Review submitted successfully.', 'hyoka')
+                ? __('Review submitted and approved automatically.', 'hyoka-product-reviews')
+                : __('Review submitted successfully.', 'hyoka-product-reviews')
             );
 
         return ['ok' => true, 'message' => $success_message];
@@ -727,53 +727,53 @@ class ProductReview
         return [
             'product-review' => [
                 'id'          => 'product-review',
-                'title'       => __('Product Review Widget', 'hyoka'),
-                'description' => __('Collect customer reviews on product pages or embed the form on any page via shortcode.', 'hyoka'),
+                'title'       => __('Product Review Widget', 'hyoka-product-reviews'),
+                'description' => __('Collect customer reviews on product pages or embed the form on any page via shortcode.', 'hyoka-product-reviews'),
                 'icon'        => 'Star',
                 'status'      => Reviewing::getWidgetStatusLabel('product-review'),
                 'enabled'     => Reviewing::isWidgetActive('product-review'),
                 'placement'   => Reviewing::getWidgetPlacement('product-review'),
-                'type'        => __('Product Page + Shortcode', 'hyoka'),
+                'type'        => __('Product Page + Shortcode', 'hyoka-product-reviews'),
             ],
             'video-carousel' => [
                 'id'          => 'video-carousel',
-                'title'       => __('Video Carousel', 'hyoka'),
-                'description' => __('Showcase your best video reviews in a carousel on product pages or any page via shortcode.', 'hyoka'),
+                'title'       => __('Video Carousel', 'hyoka-product-reviews'),
+                'description' => __('Showcase your best video reviews in a carousel on product pages or any page via shortcode.', 'hyoka-product-reviews'),
                 'icon'        => 'Play',
                 'status'      => Reviewing::getWidgetStatusLabel('video-carousel'),
                 'enabled'     => Reviewing::isWidgetActive('video-carousel'),
                 'placement'   => Reviewing::getWidgetPlacement('video-carousel'),
-                'type'        => __('Product Page + Shortcode', 'hyoka'),
+                'type'        => __('Product Page + Shortcode', 'hyoka-product-reviews'),
             ],
             'card-carousel' => [
                 'id'          => 'card-carousel',
-                'title'       => __('Card Carousel', 'hyoka'),
-                'description' => __('Display customer reviews in a card carousel on product pages or any page via shortcode.', 'hyoka'),
+                'title'       => __('Card Carousel', 'hyoka-product-reviews'),
+                'description' => __('Display customer reviews in a card carousel on product pages or any page via shortcode.', 'hyoka-product-reviews'),
                 'icon'        => 'LayoutTemplate',
                 'status'      => Reviewing::getWidgetStatusLabel('card-carousel'),
                 'enabled'     => Reviewing::isWidgetActive('card-carousel'),
                 'placement'   => Reviewing::getWidgetPlacement('card-carousel'),
-                'type'        => __('Product Page + Shortcode', 'hyoka'),
+                'type'        => __('Product Page + Shortcode', 'hyoka-product-reviews'),
             ],
             'testimonials-carousel' => [
                 'id'          => 'testimonials-carousel',
-                'title'       => __('Testimonials Carousel', 'hyoka'),
-                'description' => __('Showcase approved store reviews above the site footer on every page.', 'hyoka'),
+                'title'       => __('Testimonials Carousel', 'hyoka-product-reviews'),
+                'description' => __('Showcase approved store reviews above the site footer on every page.', 'hyoka-product-reviews'),
                 'icon'        => 'MessageCircle',
                 'status'      => Reviewing::getWidgetStatusLabel('testimonials-carousel'),
                 'enabled'     => Reviewing::isWidgetActive('testimonials-carousel'),
                 'placement'   => Reviewing::getWidgetPlacement('testimonials-carousel'),
-                'type'        => __('Above Footer', 'hyoka'),
+                'type'        => __('Above Footer', 'hyoka-product-reviews'),
             ],
             'site-rating' => [
                 'id'          => 'site-rating',
-                'title'       => __('Overall Site Rating', 'hyoka'),
-                'description' => __('Display your store rating on product pages or any page via shortcode.', 'hyoka'),
+                'title'       => __('Overall Site Rating', 'hyoka-product-reviews'),
+                'description' => __('Display your store rating on product pages or any page via shortcode.', 'hyoka-product-reviews'),
                 'icon'        => 'Star',
                 'status'      => Reviewing::getWidgetStatusLabel('site-rating'),
                 'enabled'     => Reviewing::isWidgetActive('site-rating'),
                 'placement'   => Reviewing::getWidgetPlacement('site-rating'),
-                'type'        => __('Product Page + Shortcode', 'hyoka'),
+                'type'        => __('Product Page + Shortcode', 'hyoka-product-reviews'),
             ],
         ];
     }

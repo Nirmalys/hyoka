@@ -981,7 +981,7 @@ class EmailSender
     {
         $schedules['hyoka_every_15_minutes'] = [
             'interval' => 15 * MINUTE_IN_SECONDS,
-            'display'  => __('Every 15 minutes (Hyoka)', 'hyoka'),
+            'display'  => __('Every 15 minutes (Hyoka)', 'hyoka-product-reviews'),
         ];
 
         return $schedules;

@@ -51,15 +51,15 @@ abstract class Base
     public function getFieldDefinitions(): array
     {
         return [
-            ['key' => 'title', 'label' => __('Review title', 'hyoka'), 'required' => false],
-            ['key' => 'body', 'label' => __('Review body', 'hyoka'), 'required' => true],
-            ['key' => 'rating', 'label' => __('Rating', 'hyoka'), 'required' => true],
-            ['key' => 'review_date', 'label' => __('Review date', 'hyoka'), 'required' => false],
-            ['key' => 'reviewer_name', 'label' => __('Reviewer name', 'hyoka'), 'required' => false],
-            ['key' => 'reviewer_email', 'label' => __('Reviewer email', 'hyoka'), 'required' => false],
-            ['key' => 'reply', 'label' => __('Reply', 'hyoka'), 'required' => false],
-            ['key' => 'picture_urls', 'label' => __('Picture URLs', 'hyoka'), 'required' => false],
-            ['key' => 'source', 'label' => __('Source', 'hyoka'), 'required' => false],
+            ['key' => 'title', 'label' => __('Review title', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'body', 'label' => __('Review body', 'hyoka-product-reviews'), 'required' => true],
+            ['key' => 'rating', 'label' => __('Rating', 'hyoka-product-reviews'), 'required' => true],
+            ['key' => 'review_date', 'label' => __('Review date', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'reviewer_name', 'label' => __('Reviewer name', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'reviewer_email', 'label' => __('Reviewer email', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'reply', 'label' => __('Reply', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'picture_urls', 'label' => __('Picture URLs', 'hyoka-product-reviews'), 'required' => false],
+            ['key' => 'source', 'label' => __('Source', 'hyoka-product-reviews'), 'required' => false],
         ];
     }
 
@@ -138,7 +138,7 @@ abstract class Base
         $is_store   = $product_id <= 0;
         $author     = sanitize_text_field($data['author'] ?? '');
         if ($author === '') {
-            $author = __('Imported reviewer', 'hyoka');
+            $author = __('Imported reviewer', 'hyoka-product-reviews');
         }
 
         $source      = sanitize_key((string) ($data['source'] ?? $this->id)) ?: $this->id;

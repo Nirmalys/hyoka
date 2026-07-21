@@ -65,13 +65,13 @@ class SubmissionFormRender
         $default_name = $current_user instanceof \WP_User ? (string) $current_user->display_name : '';
         $default_email = $current_user instanceof \WP_User ? (string) $current_user->user_email : '';
 
-        $form_title = (string) ($settings['form_title'] ?? __('Write a Review', 'hyoka'));
+        $form_title = (string) ($settings['form_title'] ?? __('Write a Review', 'hyoka-product-reviews'));
         if ($form_title === '') {
-            $form_title = __('Write a Review', 'hyoka');
+            $form_title = __('Write a Review', 'hyoka-product-reviews');
         }
-        $submit_label = (string) ($settings['submit_button_text'] ?? __('Submit Review', 'hyoka'));
+        $submit_label = (string) ($settings['submit_button_text'] ?? __('Submit Review', 'hyoka-product-reviews'));
         if ($submit_label === '') {
-            $submit_label = __('Submit Review', 'hyoka');
+            $submit_label = __('Submit Review', 'hyoka-product-reviews');
         }
 
         [
@@ -99,9 +99,9 @@ class SubmissionFormRender
                     <div class="HYOKA-form-standard-header">
                         <h4 class="HYOKA-form-standard-title"><?php echo esc_html($form_title); ?></h4>
                         <?php if ($show_rating) : ?>
-                            <div class="HYOKA-star-rating HYOKA-form-standard-stars" aria-label="<?php esc_attr_e('Your rating', 'hyoka'); ?>">
+                            <div class="HYOKA-star-rating HYOKA-form-standard-stars" aria-label="<?php esc_attr_e('Your rating', 'hyoka-product-reviews'); ?>">
                                 <?php for ($i = 1; $i <= 5; $i++) : ?>
-                                    <button type="button" class="HYOKA-star-btn" data-value="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr(sprintf(/* translators: %d: star count */ __('%d stars', 'hyoka'), $i)); ?>">★</button>
+                                    <button type="button" class="HYOKA-star-btn" data-value="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr(sprintf(/* translators: %d: star count */ __('%d stars', 'hyoka-product-reviews'), $i)); ?>">★</button>
                                 <?php endfor; ?>
                             </div>
                         <?php endif; ?>
@@ -110,7 +110,7 @@ class SubmissionFormRender
                     <div class="HYOKA-form-standard-fields">
                         <?php if ($show_name) : ?>
                             <div class="HYOKA-form-group">
-                                <input type="text" class="HYOKA-author-name" name="author_name" value="<?php echo esc_attr($default_name); ?>" placeholder="<?php esc_attr_e('Your name', 'hyoka'); ?>"<?php if ($default_name === '') { echo ' required'; } ?> />
+                                <input type="text" class="HYOKA-author-name" name="author_name" value="<?php echo esc_attr($default_name); ?>" placeholder="<?php esc_attr_e('Your name', 'hyoka-product-reviews'); ?>"<?php if ($default_name === '') { echo ' required'; } ?> />
                             </div>
                         <?php else : ?>
                             <input type="hidden" class="HYOKA-author-name" name="author_name" value="<?php echo esc_attr($default_name); ?>" />
@@ -118,7 +118,7 @@ class SubmissionFormRender
 
                         <?php if ($show_email) : ?>
                             <div class="HYOKA-form-group">
-                                <input type="email" class="HYOKA-author-email" name="author_email" value="<?php echo esc_attr($default_email); ?>" placeholder="<?php esc_attr_e('Your email', 'hyoka'); ?>"<?php if ($default_email === '') { echo ' required'; } ?> />
+                                <input type="email" class="HYOKA-author-email" name="author_email" value="<?php echo esc_attr($default_email); ?>" placeholder="<?php esc_attr_e('Your email', 'hyoka-product-reviews'); ?>"<?php if ($default_email === '') { echo ' required'; } ?> />
                             </div>
                         <?php else : ?>
                             <input type="hidden" class="HYOKA-author-email" name="author_email" value="<?php echo esc_attr($default_email); ?>" />
@@ -126,19 +126,19 @@ class SubmissionFormRender
 
                         <?php if ($show_location) : ?>
                             <div class="HYOKA-form-group">
-                                <input type="text" class="HYOKA-review-location" name="review_location" value="" placeholder="<?php esc_attr_e('Your location', 'hyoka'); ?>" />
+                                <input type="text" class="HYOKA-review-location" name="review_location" value="" placeholder="<?php esc_attr_e('Your location', 'hyoka-product-reviews'); ?>" />
                             </div>
                         <?php endif; ?>
 
                         <?php if ($show_title) : ?>
                             <div class="HYOKA-form-group">
-                                <input type="text" class="HYOKA-review-title" name="review_title" value="" placeholder="<?php esc_attr_e('Title of your review', 'hyoka'); ?>" />
+                                <input type="text" class="HYOKA-review-title" name="review_title" value="" placeholder="<?php esc_attr_e('Title of your review', 'hyoka-product-reviews'); ?>" />
                             </div>
                         <?php endif; ?>
 
                         <?php if ($show_review) : ?>
                             <div class="HYOKA-form-group">
-                                <textarea class="HYOKA-review-content" name="review_content" rows="4" required placeholder="<?php esc_attr_e('Tell us what you think...', 'hyoka'); ?>"></textarea>
+                                <textarea class="HYOKA-review-content" name="review_content" rows="4" required placeholder="<?php esc_attr_e('Tell us what you think...', 'hyoka-product-reviews'); ?>"></textarea>
                             </div>
                         <?php endif; ?>
 
@@ -147,13 +147,13 @@ class SubmissionFormRender
                                 <?php if ($photos_enabled) : ?>
                                     <label class="HYOKA-media-upload-card">
                                         <input type="file" class="HYOKA-review-media" name="review_media[]" accept="image/*" multiple>
-                                        <span class="HYOKA-media-upload-card-label"><?php esc_html_e('Upload Image', 'hyoka'); ?></span>
+                                        <span class="HYOKA-media-upload-card-label"><?php esc_html_e('Upload Image', 'hyoka-product-reviews'); ?></span>
                                     </label>
                                 <?php endif; ?>
                                 <?php if ($videos_enabled) : ?>
                                     <label class="HYOKA-media-upload-card">
                                         <input type="file" class="HYOKA-review-media" name="review_media[]" accept="video/*" multiple>
-                                        <span class="HYOKA-media-upload-card-label"><?php esc_html_e('Upload Video', 'hyoka'); ?></span>
+                                        <span class="HYOKA-media-upload-card-label"><?php esc_html_e('Upload Video', 'hyoka-product-reviews'); ?></span>
                                     </label>
                                 <?php endif; ?>
                             </div>
@@ -196,9 +196,9 @@ class SubmissionFormRender
     public static function renderInviteFormFields(array $settings, array $customer): void
     {
         $form_subtitle = (string) ($settings['form_subtitle'] ?? '');
-        $submit_label = (string) ($settings['submit_button_text'] ?? __('Submit Review', 'hyoka'));
+        $submit_label = (string) ($settings['submit_button_text'] ?? __('Submit Review', 'hyoka-product-reviews'));
         if ($submit_label === '') {
-            $submit_label = __('Submit Review', 'hyoka');
+            $submit_label = __('Submit Review', 'hyoka-product-reviews');
         }
 
         [
@@ -222,10 +222,10 @@ class SubmissionFormRender
 
         if ($show_rating) {
             echo '<input type="hidden" id="hyoka-rating" name="rating" value="">';
-            echo '<label>' . esc_html__('Your rating', 'hyoka') . '</label>';
-            echo '<div class="hyoka-invite-stars" id="hyoka-stars" role="group" aria-label="' . esc_attr__('Rating', 'hyoka') . '">';
+            echo '<label>' . esc_html__('Your rating', 'hyoka-product-reviews') . '</label>';
+            echo '<div class="hyoka-invite-stars" id="hyoka-stars" role="group" aria-label="' . esc_attr__('Rating', 'hyoka-product-reviews') . '">';
             for ($i = 1; $i <= 5; $i++) {
-                $star_label = sprintf(/* translators: %d: star rating from 1 to 5. */ __('%d stars', 'hyoka'), $i);
+                $star_label = sprintf(/* translators: %d: star rating from 1 to 5. */ __('%d stars', 'hyoka-product-reviews'), $i);
                 echo '<button type="button" data-rating="' . (int) $i . '" aria-label="' . esc_attr($star_label) . '">★</button>';
             }
             echo '</div>';
@@ -234,14 +234,14 @@ class SubmissionFormRender
         }
 
         if ($show_name) {
-            echo '<label>' . esc_html__('Your name', 'hyoka') . '</label>';
+            echo '<label>' . esc_html__('Your name', 'hyoka-product-reviews') . '</label>';
             echo '<input name="author_name" value="' . esc_attr($customer_name) . '" required>';
         } else {
             echo '<input type="hidden" name="author_name" value="' . esc_attr($customer_name) . '">';
         }
 
         if ($show_email) {
-            echo '<label>' . esc_html__('Email', 'hyoka') . '</label>';
+            echo '<label>' . esc_html__('Email', 'hyoka-product-reviews') . '</label>';
             echo '<input type="email" name="author_email" value="' . esc_attr($customer_email) . '"';
             if ($customer_email !== '') {
                 echo ' readonly';
@@ -252,26 +252,26 @@ class SubmissionFormRender
         }
 
         if ($show_location) {
-            echo '<label>' . esc_html__('Your location', 'hyoka') . '</label>';
-            echo '<input name="review_location" value="" placeholder="' . esc_attr__('Your location', 'hyoka') . '">';
+            echo '<label>' . esc_html__('Your location', 'hyoka-product-reviews') . '</label>';
+            echo '<input name="review_location" value="" placeholder="' . esc_attr__('Your location', 'hyoka-product-reviews') . '">';
         }
 
         if ($show_title) {
-            echo '<label>' . esc_html__('Title of your review', 'hyoka') . '</label>';
-            echo '<input name="review_title" value="" placeholder="' . esc_attr__('Title of your review', 'hyoka') . '">';
+            echo '<label>' . esc_html__('Title of your review', 'hyoka-product-reviews') . '</label>';
+            echo '<input name="review_title" value="" placeholder="' . esc_attr__('Title of your review', 'hyoka-product-reviews') . '">';
         }
 
         if ($show_review) {
-            echo '<label>' . esc_html__('Your review', 'hyoka') . '</label>';
-            echo '<textarea name="review_content" rows="5" required placeholder="' . esc_attr__('Tell us what you think...', 'hyoka') . '"></textarea>';
+            echo '<label>' . esc_html__('Your review', 'hyoka-product-reviews') . '</label>';
+            echo '<textarea name="review_content" rows="5" required placeholder="' . esc_attr__('Tell us what you think...', 'hyoka-product-reviews') . '"></textarea>';
         }
 
         if ($photos_enabled) {
-            echo '<label for="hyoka-invite-media-photos">' . esc_html__('Add Photos (Optional)', 'hyoka') . '</label>';
+            echo '<label for="hyoka-invite-media-photos">' . esc_html__('Add Photos (Optional)', 'hyoka-product-reviews') . '</label>';
             echo '<input type="file" id="hyoka-invite-media-photos" class="hyoka-invite-media" name="review_media[]" multiple accept="image/*" style="margin: 10px 0;">';
         }
         if ($videos_enabled) {
-            echo '<label for="hyoka-invite-media-videos">' . esc_html__('Add Videos (Optional)', 'hyoka') . '</label>';
+            echo '<label for="hyoka-invite-media-videos">' . esc_html__('Add Videos (Optional)', 'hyoka-product-reviews') . '</label>';
             echo '<input type="file" id="hyoka-invite-media-videos" class="hyoka-invite-media" name="review_media[]" multiple accept="video/*" style="margin: 10px 0;">';
         }
         if ($photos_enabled || $videos_enabled) {
@@ -286,8 +286,8 @@ class SubmissionFormRender
     /**
      * Build review-form theme CSS from sanitized settings tokens.
      *
-     * Security boundary: every interpolated value is validated before assembly.
-     * The returned string is passed directly to wp_add_inline_style().
+     * Only validated tokens (colors, allowlisted font stacks) are interpolated.
+     * Output is attached via Assets::attachInlineCss().
      *
      * @param array<string, mixed> $settings
      */
@@ -308,8 +308,8 @@ class SubmissionFormRender
     /**
      * Build email invite page theme CSS from sanitized settings tokens.
      *
-     * Security boundary: every interpolated value is validated before assembly.
-     * The returned string is passed directly to wp_add_inline_style().
+     * Only validated tokens (colors, allowlisted font stacks) are interpolated.
+     * Output is attached via Assets::attachInlineCss().
      *
      * @param array<string, mixed> $settings
      */

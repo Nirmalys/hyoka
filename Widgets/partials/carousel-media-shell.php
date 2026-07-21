@@ -17,7 +17,7 @@ $hyoka_empty_message = (string) ($hyoka_empty_message ?? '');
 $hyoka_media_slides  = is_array($hyoka_media_slides ?? null) ? $hyoka_media_slides : [];
 ?>
 <div class="HYOKA-carousel-container has-side-nav">
-    <button type="button" class="HYOKA-nav-prev side-nav" aria-label="<?php esc_attr_e('Previous', 'hyoka'); ?>">❮</button>
+    <button type="button" class="HYOKA-nav-prev side-nav" aria-label="<?php esc_attr_e('Previous', 'hyoka-product-reviews'); ?>">❮</button>
 
     <div class="HYOKA-carousel-track" id="<?php echo esc_attr($hyoka_track_id); ?>">
         <?php if ($hyoka_media_slides === []) : ?>
@@ -33,5 +33,5 @@ $hyoka_media_slides  = is_array($hyoka_media_slides ?? null) ? $hyoka_media_slid
         <?php endforeach; ?>
     </div>
 
-    <button type="button" class="HYOKA-nav-next side-nav" aria-label="<?php esc_attr_e('Next', 'hyoka'); ?>">❯</button>
+    <button type="button" class="HYOKA-nav-next side-nav" aria-label="<?php esc_attr_e('Next', 'hyoka-product-reviews'); ?>">❯</button>
 </div>

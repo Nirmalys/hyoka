@@ -248,7 +248,7 @@ class Ajax
         if ($media !== []) {
             $media_json = wp_json_encode($media);
             if ($media_json === false) {
-                wp_send_json_error(['message' => __('Unable to process media upload.', 'hyoka')]);
+                wp_send_json_error(['message' => __('Unable to process media upload.', 'hyoka-product-reviews')]);
                 return;
             }
             $params['media_json'] = $media_json;

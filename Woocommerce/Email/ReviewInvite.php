@@ -54,7 +54,7 @@ class ReviewInvite
         if ($status !== 'valid') {
             $message = Link::inviteStatusMessage($status);
             if ($message === '') {
-                $message = __('This review link is invalid.', 'hyoka');
+                $message = __('This review link is invalid.', 'hyoka-product-reviews');
             }
             self::renderError($message);
             return;
@@ -73,7 +73,7 @@ class ReviewInvite
 
         $title = $product['title'] !== ''
             ? $product['title']
-            : ($product_id > 0 ? (string) get_the_title($product_id) : __('Product', 'hyoka'));
+            : ($product_id > 0 ? (string) get_the_title($product_id) : __('Product', 'hyoka-product-reviews'));
         $permalink = $product['link'] !== ''
             ? $product['link']
             : ($product_id > 0 ? esc_url_raw((string) get_permalink($product_id)) : '');
@@ -86,7 +86,7 @@ class ReviewInvite
         if ($form_title === '') {
             $form_title = sprintf(
                 /* translators: %s: product name */
-                __('Thank you! Rate %s', 'hyoka'),
+                __('Thank you! Rate %s', 'hyoka-product-reviews'),
                 $title
             );
         }
@@ -105,10 +105,10 @@ class ReviewInvite
                 'product_id'        => $product_id,
                 'mediaUploadNonce'  => wp_create_nonce('media-form'),
                 'strings'           => [
-                    'networkError' => __('Network error.', 'hyoka'),
-                    'error'        => __('Something went wrong.', 'hyoka'),
-                    'submitting'   => __('Submitting…', 'hyoka'),
-                    'pickRating'   => __('Please tap the stars to choose your rating.', 'hyoka'),
+                    'networkError' => __('Network error.', 'hyoka-product-reviews'),
+                    'error'        => __('Something went wrong.', 'hyoka-product-reviews'),
+                    'submitting'   => __('Submitting…', 'hyoka-product-reviews'),
+                    'pickRating'   => __('Please tap the stars to choose your rating.', 'hyoka-product-reviews'),
                 ],
             ]
         );
@@ -166,7 +166,7 @@ class ReviewInvite
         status_header(404);
         header('Content-Type: text/html; charset=' . get_option('blog_charset'));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
-        echo '<title>' . esc_html__('Review link', 'hyoka') . '</title></head><body style="font-family:system-ui;padding:40px;">';
+        echo '<title>' . esc_html__('Review link', 'hyoka-product-reviews') . '</title></head><body style="font-family:system-ui;padding:40px;">';
         echo '<p>' . esc_html($message) . '</p>';
         echo '</body></html>';
         exit;

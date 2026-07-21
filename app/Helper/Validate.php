@@ -71,7 +71,7 @@ class Validate
 
         return [
             'ok'      => true,
-            'message' => __('Import started. Reviews will appear as Pending for admin approval.', 'hyoka'),
+            'message' => __('Import started. Reviews will appear as Pending for admin approval.', 'hyoka-product-reviews'),
             'job_id'  => $job_id,
             'total'   => $job['total'],
         ];
@@ -120,7 +120,7 @@ class Validate
                 ++$job['imported'];
             } else {
                 ++$job['failed'];
-                $job['errors'][$index] = [__('Could not save review.', 'hyoka')];
+                $job['errors'][$index] = [__('Could not save review.', 'hyoka-product-reviews')];
             }
         }
 
@@ -197,7 +197,7 @@ class Validate
         if (($job['status'] ?? '') === 'completed') {
             return sprintf(
                 /* translators: 1: imported, 2: failed */
-                __('Import complete. %1$d reviews are pending approval (%2$d skipped). Open Reviews to approve them for widgets.', 'hyoka'),
+                __('Import complete. %1$d reviews are pending approval (%2$d skipped). Open Reviews to approve them for widgets.', 'hyoka-product-reviews'),
                 (int) ($job['imported'] ?? 0),
                 (int) ($job['failed'] ?? 0)
             );
@@ -205,7 +205,7 @@ class Validate
 
         return sprintf(
             /* translators: 1: processed, 2: total */
-            __('Importing… %1$d of %2$d rows processed.', 'hyoka'),
+            __('Importing… %1$d of %2$d rows processed.', 'hyoka-product-reviews'),
             min((int) ($job['offset'] ?? 0), (int) ($job['total'] ?? 0)),
             (int) ($job['total'] ?? 0)
         );

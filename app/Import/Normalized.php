@@ -121,36 +121,36 @@ final class Normalized
 
         $body = (string) ($data['content'] ?? '');
         if ($body === '') {
-            $errors[] = __('Review body is required.', 'hyoka');
+            $errors[] = __('Review body is required.', 'hyoka-product-reviews');
         } elseif (mb_strlen($body) < 3) {
-            $errors[] = __('Review body must be at least 3 characters.', 'hyoka');
+            $errors[] = __('Review body must be at least 3 characters.', 'hyoka-product-reviews');
         } elseif (mb_strlen($body) > 10000) {
-            $errors[] = __('Review body is too long (max 10,000 characters).', 'hyoka');
+            $errors[] = __('Review body is too long (max 10,000 characters).', 'hyoka-product-reviews');
         }
 
         if (empty($data['rating_valid'])) {
-            $errors[] = __('Rating must be a number from 1 to 5.', 'hyoka');
+            $errors[] = __('Rating must be a number from 1 to 5.', 'hyoka-product-reviews');
         }
 
         $title = (string) ($data['title'] ?? '');
         if ($title !== '' && mb_strlen($title) > 200) {
-            $errors[] = __('Review title must be 200 characters or fewer.', 'hyoka');
+            $errors[] = __('Review title must be 200 characters or fewer.', 'hyoka-product-reviews');
         }
 
         $email = (string) ($data['email'] ?? '');
         if ($email !== '' && ! is_email($email)) {
-            $errors[] = __('Reviewer email is not valid.', 'hyoka');
+            $errors[] = __('Reviewer email is not valid.', 'hyoka-product-reviews');
         }
 
         if (! empty($data['invalid_date'])) {
-            $errors[] = __('Review date is not a valid date.', 'hyoka');
+            $errors[] = __('Review date is not a valid date.', 'hyoka-product-reviews');
         }
 
         if (! empty($data['invalid_media_urls']) && is_array($data['invalid_media_urls'])) {
             foreach ($data['invalid_media_urls'] as $bad_url) {
                 $errors[] = sprintf(
                     /* translators: %s: URL */
-                    __('Invalid picture URL: %s', 'hyoka'),
+                    __('Invalid picture URL: %s', 'hyoka-product-reviews'),
                     esc_html((string) $bad_url)
                 );
             }

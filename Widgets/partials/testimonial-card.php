@@ -12,7 +12,7 @@ defined('ABSPATH') || exit;
  */
 
 $hyoka_rating        = (int) ($hyoka_review['rating'] ?? 5);
-$hyoka_author        = (string) ($hyoka_review['author'] ?? __('Anonymous', 'hyoka'));
+$hyoka_author        = (string) ($hyoka_review['author'] ?? __('Anonymous', 'hyoka-product-reviews'));
 $hyoka_content       = trim((string) ($hyoka_review['content'] ?? ''));
 $hyoka_product_title = (string) ($hyoka_review['product_title'] ?? '');
 $hyoka_product_link  = (string) ($hyoka_review['product_link'] ?? '#');

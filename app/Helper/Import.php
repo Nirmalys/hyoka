@@ -48,7 +48,7 @@ class Import
                 'ok'      => false,
                 'message' => sprintf(
                     /* translators: %d: error count */
-                    __('Found %d row(s) with validation errors. Fix your file or mapping before importing.', 'hyoka'),
+                    __('Found %d row(s) with validation errors. Fix your file or mapping before importing.', 'hyoka-product-reviews'),
                     count($errors)
                 ),
                 'errors'  => $errors,
@@ -59,7 +59,7 @@ class Import
 
         return [
             'ok'          => true,
-            'message'     => __('All rows passed validation.', 'hyoka'),
+            'message'     => __('All rows passed validation.', 'hyoka-product-reviews'),
             'total'       => count($parsed['rows']),
             'valid_count' => count($parsed['rows']),
             'errors'      => [],
@@ -165,13 +165,13 @@ class Import
         $rows = $payload['rows'];
 
         if ($rows === []) {
-            return ['ok' => false, 'message' => __('No review rows to import.', 'hyoka')];
+            return ['ok' => false, 'message' => __('No review rows to import.', 'hyoka-product-reviews')];
         }
 
         $body_col   = isset($column_map['body']) ? (int) $column_map['body'] : -1;
         $rating_col = isset($column_map['rating']) ? (int) $column_map['rating'] : -1;
         if ($body_col < 0 || $rating_col < 0) {
-            return ['ok' => false, 'message' => __('Review body and rating columns are required.', 'hyoka')];
+            return ['ok' => false, 'message' => __('Review body and rating columns are required.', 'hyoka-product-reviews')];
         }
 
         return [

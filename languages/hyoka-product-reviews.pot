@@ -9,10 +9,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-16T12:27:07+00:00\n"
+"POT-Creation-Date: 2026-07-21T06:07:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: hyoka\n"
+"X-Domain: hyoka-product-reviews\n"
 
 #. Plugin Name of the plugin
 #: hyoka.php
@@ -39,61 +39,65 @@ msgstr ""
 msgid "https://ysinnovations.com"
 msgstr ""
 
-#: app/Controller/Ajax.php:238
+#: app/Controller/Ajax.php:251
 msgid "Unable to process media upload."
 msgstr ""
 
-#: app/Controller/Rest/Endpoint.php:78
+#: app/Controller/Rest/Endpoint.php:86
 msgid "Invalid action"
 msgstr ""
 
-#: app/Controller/Rest/Endpoint.php:98
+#: app/Controller/Rest/Endpoint.php:111
 msgid "Missing security token."
 msgstr ""
 
-#: app/Controller/Rest/Endpoint.php:106
+#: app/Controller/Rest/Endpoint.php:120
 msgid "Invalid security token."
 msgstr ""
 
-#: app/Helper/DashboardStats.php:587
-#: app/Helper/DashboardStats.php:924
+#: app/Controller/Rest/Endpoint.php:154
+msgid "An unexpected error occurred. Please try again."
+msgstr ""
+
+#: app/Helper/DashboardStats.php:595
+#: app/Helper/DashboardStats.php:936
 msgid "Unknown Product"
 msgstr ""
 
-#: app/Helper/DashboardStats.php:643
+#: app/Helper/DashboardStats.php:652
 msgid "a product"
 msgstr ""
 
-#: app/Helper/DashboardStats.php:644
+#: app/Helper/DashboardStats.php:653
 msgid "your store"
 msgstr ""
 
 #. translators: %s: product name
-#: app/Helper/DashboardStats.php:661
+#: app/Helper/DashboardStats.php:670
 #, php-format
 msgid "Customer question answered on %s"
 msgstr ""
 
 #. translators: %s: product name
-#: app/Helper/DashboardStats.php:675
+#: app/Helper/DashboardStats.php:684
 #, php-format
 msgid "You replied to a review on %s"
 msgstr ""
 
 #. translators: 1: reviewer name, 2: product name
-#: app/Helper/DashboardStats.php:689
+#: app/Helper/DashboardStats.php:698
 #, php-format
 msgid "%1$s uploaded a video review on %2$s"
 msgstr ""
 
 #. translators: 1: reviewer name, 2: star rating, 3: product name
-#: app/Helper/DashboardStats.php:708
+#: app/Helper/DashboardStats.php:717
 #, php-format
 msgid "%1$s left a %2$d-star review on %3$s"
 msgstr ""
 
 #. translators: 1: number of reviews, 2: import source label
-#: app/Helper/DashboardStats.php:766
+#: app/Helper/DashboardStats.php:776
 #, php-format
 msgid "%1$d review imported from %2$s"
 msgid_plural "%1$d reviews imported from %2$s"
@@ -101,18 +105,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of customers
-#: app/Helper/DashboardStats.php:826
+#: app/Helper/DashboardStats.php:837
 #, php-format
 msgid "Review request email sent to %d customer"
 msgid_plural "Review request email sent to %d customers"
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/Helper/DashboardStats.php:953
+#: app/Helper/DashboardStats.php:965
 msgid "A customer"
 msgstr ""
 
-#: app/Helper/DashboardStats.php:982
+#: app/Helper/DashboardStats.php:994
 msgid "Import"
 msgstr ""
 
@@ -141,77 +145,77 @@ msgstr ""
 
 #: app/Helper/SubmissionFormRender.php:72
 #: app/Helper/SubmissionFormRender.php:74
-#: app/Helper/SubmissionFormRender.php:190
-#: app/Helper/SubmissionFormRender.php:192
+#: app/Helper/SubmissionFormRender.php:199
+#: app/Helper/SubmissionFormRender.php:201
 msgid "Submit Review"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:93
-#: app/Helper/SubmissionFormRender.php:207
+#: app/Helper/SubmissionFormRender.php:102
+#: app/Helper/SubmissionFormRender.php:225
 msgid "Your rating"
 msgstr ""
 
 #. translators: %d: star count
 #. translators: %d: star rating from 1 to 5.
-#: app/Helper/SubmissionFormRender.php:95
-#: app/Helper/SubmissionFormRender.php:210
+#: app/Helper/SubmissionFormRender.php:104
+#: app/Helper/SubmissionFormRender.php:228
 #: Widgets/review-form.php:68
 #, php-format
 msgid "%d stars"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:104
-#: app/Helper/SubmissionFormRender.php:219
+#: app/Helper/SubmissionFormRender.php:113
+#: app/Helper/SubmissionFormRender.php:237
 msgid "Your name"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:112
+#: app/Helper/SubmissionFormRender.php:121
 msgid "Your email"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:120
-#: app/Helper/SubmissionFormRender.php:237
-#: app/Helper/SubmissionFormRender.php:238
+#: app/Helper/SubmissionFormRender.php:129
+#: app/Helper/SubmissionFormRender.php:255
+#: app/Helper/SubmissionFormRender.php:256
 msgid "Your location"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:126
-#: app/Helper/SubmissionFormRender.php:242
-#: app/Helper/SubmissionFormRender.php:243
+#: app/Helper/SubmissionFormRender.php:135
+#: app/Helper/SubmissionFormRender.php:260
+#: app/Helper/SubmissionFormRender.php:261
 msgid "Title of your review"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:132
-#: app/Helper/SubmissionFormRender.php:248
+#: app/Helper/SubmissionFormRender.php:141
+#: app/Helper/SubmissionFormRender.php:266
 msgid "Tell us what you think..."
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:141
+#: app/Helper/SubmissionFormRender.php:150
 msgid "Upload Image"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:147
+#: app/Helper/SubmissionFormRender.php:156
 msgid "Upload Video"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:208
+#: app/Helper/SubmissionFormRender.php:226
 #: app/Import/Base.php:56
 msgid "Rating"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:226
+#: app/Helper/SubmissionFormRender.php:244
 msgid "Email"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:247
+#: app/Helper/SubmissionFormRender.php:265
 msgid "Your review"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:252
+#: app/Helper/SubmissionFormRender.php:270
 msgid "Add Photos (Optional)"
 msgstr ""
 
-#: app/Helper/SubmissionFormRender.php:256
+#: app/Helper/SubmissionFormRender.php:274
 msgid "Add Videos (Optional)"
 msgstr ""
 
@@ -417,41 +421,41 @@ msgstr ""
 msgid "Generic spreadsheet import for any review export or custom template."
 msgstr ""
 
-#: app/Model/Customer.php:85
-#: app/Model/Customer.php:97
-#: app/Model/Customer.php:121
-#: app/Model/Customer.php:128
-#: app/Model/Customer.php:134
+#: app/Model/Customer.php:86
+#: app/Model/Customer.php:98
+#: app/Model/Customer.php:122
+#: app/Model/Customer.php:129
+#: app/Model/Customer.php:135
 msgid "Pending"
 msgstr ""
 
-#: app/Model/Customer.php:86
+#: app/Model/Customer.php:87
 msgid "WooCommerce order is not Completed yet."
 msgstr ""
 
-#: app/Model/Customer.php:99
+#: app/Model/Customer.php:100
 msgid "Automation is off."
 msgstr ""
 
-#: app/Model/Customer.php:100
+#: app/Model/Customer.php:101
 msgid "Waiting for automation to send."
 msgstr ""
 
-#: app/Model/Customer.php:109
+#: app/Model/Customer.php:110
 msgid "Scheduled"
 msgstr ""
 
 #. translators: 1: formatted date, 2: number of days
-#: app/Model/Customer.php:112
+#: app/Model/Customer.php:113
 #, php-format
 msgid "Sends on or after %1$s (%2$d days after purchase)."
 msgstr ""
 
-#: app/Model/Customer.php:122
+#: app/Model/Customer.php:123
 msgid "Turn on automation or send manually from Manual Request."
 msgstr ""
 
-#: app/Model/Customer.php:129
+#: app/Model/Customer.php:130
 msgid "Scheduled review requests are off. Send manually from Manual Request."
 msgstr ""
 
@@ -550,7 +554,7 @@ msgstr ""
 msgid "No approved video reviews to display yet."
 msgstr ""
 
-#: Woocommerce/Email/EmailSender.php:985
+#: Woocommerce/Email/EmailSender.php:984
 msgid "Every 15 minutes (Hyoka)"
 msgstr ""
 
@@ -612,7 +616,7 @@ msgid "Notification from {site_name}"
 msgstr ""
 
 #: Woocommerce/Email/EmailService.php:661
-#: Woocommerce/Email/MediaUpload.php:284
+#: Woocommerce/Email/MediaUpload.php:297
 msgid "Upload media"
 msgstr ""
 
@@ -629,128 +633,128 @@ msgid "your product"
 msgstr ""
 
 #. translators: %d: number of days invite links stay valid
-#: Woocommerce/Email/Link.php:290
+#: Woocommerce/Email/Link.php:307
 #, php-format
 msgid "This review link has expired. Review links are valid for %d days from when the email was sent."
 msgstr ""
 
-#: Woocommerce/Email/Link.php:294
+#: Woocommerce/Email/Link.php:311
 msgid "This review link has already been used."
 msgstr ""
 
-#: Woocommerce/Email/Link.php:298
-#: Woocommerce/Email/ReviewInvite.php:42
+#: Woocommerce/Email/Link.php:315
+#: Woocommerce/Email/ReviewInvite.php:57
 #: Woocommerce/Product/ProductReview.php:440
 msgid "This review link is invalid."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:94
+#: Woocommerce/Email/MediaUpload.php:105
 msgid "Invalid request."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:100
+#: Woocommerce/Email/MediaUpload.php:111
 msgid "Review not found."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:105
-#: Woocommerce/Email/MediaUpload.php:222
+#: Woocommerce/Email/MediaUpload.php:116
+#: Woocommerce/Email/MediaUpload.php:235
 msgid "This upload link is invalid or has expired."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:125
-#: Woocommerce/Email/MediaUpload.php:177
+#: Woocommerce/Email/MediaUpload.php:138
+#: Woocommerce/Email/MediaUpload.php:190
 msgid "Upload failed."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:135
-#: Woocommerce/Email/MediaUpload.php:171
+#: Woocommerce/Email/MediaUpload.php:148
+#: Woocommerce/Email/MediaUpload.php:184
 msgid "Only images and videos are allowed."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:164
+#: Woocommerce/Email/MediaUpload.php:177
 msgid "Unsupported file type."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:190
+#: Woocommerce/Email/MediaUpload.php:203
 msgid "Could not save media to your review."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:195
+#: Woocommerce/Email/MediaUpload.php:208
 msgid "Media uploaded successfully."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:216
+#: Woocommerce/Email/MediaUpload.php:229
 msgid "This upload link is invalid."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:229
+#: Woocommerce/Email/MediaUpload.php:242
 msgid "Media was already added to this review. This upload link is no longer available."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:235
-#: Woocommerce/Email/ReviewInvite.php:61
+#: Woocommerce/Email/MediaUpload.php:248
+#: Woocommerce/Email/ReviewInvite.php:76
 msgid "Product"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:249
-#: Woocommerce/Email/ReviewInvite.php:93
+#: Woocommerce/Email/MediaUpload.php:262
+#: Woocommerce/Email/ReviewInvite.php:108
 msgid "Network error."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:250
-#: Woocommerce/Email/ReviewInvite.php:94
+#: Woocommerce/Email/MediaUpload.php:263
+#: Woocommerce/Email/ReviewInvite.php:109
 msgid "Something went wrong."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:251
+#: Woocommerce/Email/MediaUpload.php:264
 msgid "Uploading…"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:252
+#: Woocommerce/Email/MediaUpload.php:265
 msgid "Media uploaded successfully. Thank you!"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:253
+#: Woocommerce/Email/MediaUpload.php:266
 msgid "Please choose a photo or video to upload."
 msgstr ""
 
 #. translators: %s: product name
-#: Woocommerce/Email/MediaUpload.php:263
+#: Woocommerce/Email/MediaUpload.php:276
 #, php-format
 msgid "Add photos or videos to your review for %s"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:280
+#: Woocommerce/Email/MediaUpload.php:293
 msgid "Choose files below to attach them to your review."
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:282
+#: Woocommerce/Email/MediaUpload.php:295
 msgid "Photos / videos"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:298
+#: Woocommerce/Email/MediaUpload.php:311
 msgid "Upload link"
 msgstr ""
 
-#: Woocommerce/Email/MediaUpload.php:305
+#: Woocommerce/Email/MediaUpload.php:318
 msgid "Upload complete"
 msgstr ""
 
 #. translators: %s: product name
-#: Woocommerce/Email/ReviewInvite.php:74
+#: Woocommerce/Email/ReviewInvite.php:89
 #, php-format
 msgid "Thank you! Rate %s"
 msgstr ""
 
-#: Woocommerce/Email/ReviewInvite.php:95
+#: Woocommerce/Email/ReviewInvite.php:110
 msgid "Submitting…"
 msgstr ""
 
-#: Woocommerce/Email/ReviewInvite.php:96
+#: Woocommerce/Email/ReviewInvite.php:111
 msgid "Please tap the stars to choose your rating."
 msgstr ""
 
-#: Woocommerce/Email/ReviewInvite.php:154
+#: Woocommerce/Email/ReviewInvite.php:169
 msgid "Review link"
 msgstr ""
 
@@ -786,53 +790,53 @@ msgstr ""
 msgid "Review submitted successfully."
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:729
+#: Woocommerce/Product/ProductReview.php:730
 msgid "Product Review Widget"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:730
+#: Woocommerce/Product/ProductReview.php:731
 msgid "Collect customer reviews on product pages or embed the form on any page via shortcode."
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:735
-#: Woocommerce/Product/ProductReview.php:745
-#: Woocommerce/Product/ProductReview.php:755
-#: Woocommerce/Product/ProductReview.php:775
+#: Woocommerce/Product/ProductReview.php:736
+#: Woocommerce/Product/ProductReview.php:746
+#: Woocommerce/Product/ProductReview.php:756
+#: Woocommerce/Product/ProductReview.php:776
 msgid "Product Page + Shortcode"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:739
+#: Woocommerce/Product/ProductReview.php:740
 msgid "Video Carousel"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:740
+#: Woocommerce/Product/ProductReview.php:741
 msgid "Showcase your best video reviews in a carousel on product pages or any page via shortcode."
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:749
+#: Woocommerce/Product/ProductReview.php:750
 msgid "Card Carousel"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:750
+#: Woocommerce/Product/ProductReview.php:751
 msgid "Display customer reviews in a card carousel on product pages or any page via shortcode."
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:759
+#: Woocommerce/Product/ProductReview.php:760
 msgid "Testimonials Carousel"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:760
+#: Woocommerce/Product/ProductReview.php:761
 msgid "Showcase approved store reviews above the site footer on every page."
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:765
+#: Woocommerce/Product/ProductReview.php:766
 msgid "Above Footer"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:769
+#: Woocommerce/Product/ProductReview.php:770
 msgid "Overall Site Rating"
 msgstr ""
 
-#: Woocommerce/Product/ProductReview.php:770
+#: Woocommerce/Product/ProductReview.php:771
 msgid "Display your store rating on product pages or any page via shortcode."
 msgstr ""

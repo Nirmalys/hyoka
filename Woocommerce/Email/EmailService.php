@@ -267,7 +267,7 @@ class EmailService
         $layout      = self::mergedLayout('store_review_fallback', $settings);
         $btn_label   = trim(strtr((string) ($layout['buttonText'] ?? ''), []));
         if ($btn_label === '') {
-            $btn_label = __('Leave a review', 'hyoka');
+            $btn_label = __('Leave a review', 'hyoka-product-reviews');
         }
 
         $name_esc = esc_html((string) $product_name);
@@ -372,12 +372,12 @@ class EmailService
         $to_email       = sanitize_email($to_email);
 
         if ($to_email === '' || ! is_email($to_email)) {
-            $failure_reason = __('Invalid recipient email.', 'hyoka');
+            $failure_reason = __('Invalid recipient email.', 'hyoka-product-reviews');
             return false;
         }
 
         if (! self::isTemplateEnabled($template_id)) {
-            $failure_reason = __('This email template rule is disabled.', 'hyoka');
+            $failure_reason = __('This email template rule is disabled.', 'hyoka-product-reviews');
             return false;
         }
 
@@ -385,7 +385,7 @@ class EmailService
         $primary_hex  = Wp::sanitizeHexColor((string) ($settings['primary_color'] ?? ''), '#F59E0B');
 
         if (! in_array($template_id, self::KNOWN_TEMPLATES, true)) {
-            $failure_reason = __('Unknown email template.', 'hyoka');
+            $failure_reason = __('Unknown email template.', 'hyoka-product-reviews');
             return false;
         }
 
@@ -393,7 +393,7 @@ class EmailService
         if ($template_id === 'reply_notification') {
             $reply_text = sanitize_textarea_field(trim((string) ($options['reply_text'] ?? '')));
             if ($reply_text === '') {
-                $failure_reason = __('Reply text is empty.', 'hyoka');
+                $failure_reason = __('Reply text is empty.', 'hyoka-product-reviews');
                 return false;
             }
             $render_options['reply_text'] = $reply_text;
@@ -409,7 +409,7 @@ class EmailService
         }
 
         if ($inner_html === '') {
-            $failure_reason = __('Email template body is empty.', 'hyoka');
+            $failure_reason = __('Email template body is empty.', 'hyoka-product-reviews');
             return false;
         }
 
@@ -464,7 +464,7 @@ class EmailService
         if (! $ok) {
             $failure_reason = $mail_failed_message !== ''
                 ? $mail_failed_message
-                : __('wp_mail returned false. Please check your server or plugin settings.', 'hyoka');
+                : __('wp_mail returned false. Please check your server or plugin settings.', 'hyoka-product-reviews');
         }
 
         return $ok;
@@ -481,7 +481,7 @@ class EmailService
         $template_id    = $email_kind === 'reminder' ? 'reminder' : 'store_review_fallback';
 
         if (Customer::hasSubmittedReview($row)) {
-            $failure_reason = __('Customer already submitted a review for this purchase.', 'hyoka');
+            $failure_reason = __('Customer already submitted a review for this purchase.', 'hyoka-product-reviews');
             return false;
         }
 
@@ -505,7 +505,7 @@ class EmailService
             $invite = Link::refreshInviteForCustomer($row_pk);
         }
         if ($invite === null || empty($invite['url'])) {
-            $failure_reason = __('Could not create a unique review link for this email. Check that the purchase row can store an invite token.', 'hyoka');
+            $failure_reason = __('Could not create a unique review link for this email. Check that the purchase row can store an invite token.', 'hyoka-product-reviews');
             return false;
         }
 
@@ -538,10 +538,10 @@ class EmailService
             $subject = trim(strtr(sanitize_text_field((string) ($settings['subject'] ?? '')), $replacements));
             $heading = trim(strtr(sanitize_text_field((string) ($settings['email_heading'] ?? '')), $replacements));
             if ($subject === '') {
-                $subject = __("We'd love your feedback", 'hyoka');
+                $subject = __("We'd love your feedback", 'hyoka-product-reviews');
             }
             if ($heading === '') {
-                $heading = __('How was your experience with us?', 'hyoka');
+                $heading = __('How was your experience with us?', 'hyoka-product-reviews');
             }
 
             return [$subject, $heading];
@@ -551,10 +551,10 @@ class EmailService
             $subject = trim(strtr(sanitize_text_field((string) ($settings['reminder_subject'] ?? '')), $replacements));
             $heading = trim(strtr(sanitize_text_field((string) ($settings['reminder_email_heading'] ?? '')), $replacements));
             if ($subject === '') {
-                $subject = __('Reminder: We would still love your review', 'hyoka');
+                $subject = __('Reminder: We would still love your review', 'hyoka-product-reviews');
             }
             if ($heading === '') {
-                $heading = __('Still have a moment to leave a review?', 'hyoka');
+                $heading = __('Still have a moment to leave a review?', 'hyoka-product-reviews');
             }
 
             return [$subject, $heading];
@@ -567,7 +567,7 @@ class EmailService
             $heading  = trim(strtr(sanitize_text_field($defaults), $replacements));
         }
         if ($heading === '') {
-            $heading = __('Notification from {site_name}', 'hyoka');
+            $heading = __('Notification from {site_name}', 'hyoka-product-reviews');
             $heading = strtr($heading, $replacements);
         }
 
@@ -658,7 +658,7 @@ class EmailService
         if ($template_id === 'media_reminder') {
             $btn_label = trim(strtr((string) ($layout['buttonText'] ?? ''), $replacements));
             if ($btn_label === '') {
-                $btn_label = __('Upload media', 'hyoka');
+                $btn_label = __('Upload media', 'hyoka-product-reviews');
             }
             $html .= self::buildReviewButtonHtml((string) ($replacements['{review_url}'] ?? ''), $primary_hex, $btn_label, $settings, $template_id, 'buttonText');
         }
@@ -705,7 +705,7 @@ class EmailService
         if (self::reviewInviteCtaEnabled($replacements)) {
             $btn_label = trim(strtr((string) ($layout['buttonText'] ?? ''), $replacements));
             if ($btn_label === '') {
-                $btn_label = __('Leave a review', 'hyoka');
+                $btn_label = __('Leave a review', 'hyoka-product-reviews');
             }
             $html .= self::buildReviewButtonHtml((string) ($replacements['{review_url}'] ?? ''), $primary_hex, $btn_label, $settings, $template_id, 'buttonText');
         }
@@ -1055,9 +1055,9 @@ class EmailService
                 $url = esc_url(strtr($el['url'] ?? '', $replacements));
                 if ($url !== '') {
                     $html = '<div style="text-align:center;margin-bottom:20px;padding:20px;background:#f9fafb;border-radius:8px;border:1px solid #eaecf0;">'
-                        . '<div style="margin-bottom:10px;">' . esc_html__('Video Content', 'hyoka') . '</div>'
+                        . '<div style="margin-bottom:10px;">' . esc_html__('Video Content', 'hyoka-product-reviews') . '</div>'
                         . '<a href="' . esc_url($url) . '" style="color:' . esc_attr($primary_hex) . ';text-decoration:underline;">'
-                        . esc_html__('Watch Video', 'hyoka') . '</a>'
+                        . esc_html__('Watch Video', 'hyoka-product-reviews') . '</a>'
                         . '</div>';
                 }
                 break;
@@ -1142,7 +1142,7 @@ class EmailService
         $product_id = absint($review_row['product_id'] ?? 0);
         $product_name = $product_id > 0 ? (string) get_the_title($product_id) : '';
         if ($product_name === '') {
-            $product_name = __('your product', 'hyoka');
+            $product_name = __('your product', 'hyoka-product-reviews');
         }
 
         $permalink = $product_id > 0 ? (string) get_permalink($product_id) : '';

@@ -83,8 +83,8 @@ class Customer
 
         if (! self::isCustomerOrderCompleted($row)) {
             return [
-                'label'  => __('Pending', 'hyoka'),
-                'reason' => __('WooCommerce order is not Completed yet.', 'hyoka'),
+                'label'  => __('Pending', 'hyoka-product-reviews'),
+                'reason' => __('WooCommerce order is not Completed yet.', 'hyoka-product-reviews'),
             ];
         }
 
@@ -95,10 +95,10 @@ class Customer
 
         if ($purchase_ts === false) {
             return [
-                'label'  => __('Pending', 'hyoka'),
+                'label'  => __('Pending', 'hyoka-product-reviews'),
                 'reason' => empty($settings['automation_enabled'])
-                    ? __('Automation is off.', 'hyoka')
-                    : __('Waiting for automation to send.', 'hyoka'),
+                    ? __('Automation is off.', 'hyoka-product-reviews')
+                    : __('Waiting for automation to send.', 'hyoka-product-reviews'),
             ];
         }
 
@@ -107,10 +107,10 @@ class Customer
 
         if ($now < $due_ts) {
             return [
-                'label'  => __('Scheduled', 'hyoka'),
+                'label'  => __('Scheduled', 'hyoka-product-reviews'),
                 'reason' => sprintf(
                     /* translators: 1: formatted date, 2: number of days */
-                    __('Sends on or after %1$s (%2$d days after purchase).', 'hyoka'),
+                    __('Sends on or after %1$s (%2$d days after purchase).', 'hyoka-product-reviews'),
                     gmdate('M j, Y', $due_ts),
                     $days_after
                 ),
@@ -119,20 +119,20 @@ class Customer
 
         if (empty($settings['automation_enabled'])) {
             return [
-                'label'  => __('Pending', 'hyoka'),
-                'reason' => __('Turn on automation or send manually from Manual Request.', 'hyoka'),
+                'label'  => __('Pending', 'hyoka-product-reviews'),
+                'reason' => __('Turn on automation or send manually from Manual Request.', 'hyoka-product-reviews'),
             ];
         }
 
         if (empty($settings['review_request_schedule_enabled'])) {
             return [
-                'label'  => __('Pending', 'hyoka'),
-                'reason' => __('Scheduled review requests are off. Send manually from Manual Request.', 'hyoka'),
+                'label'  => __('Pending', 'hyoka-product-reviews'),
+                'reason' => __('Scheduled review requests are off. Send manually from Manual Request.', 'hyoka-product-reviews'),
             ];
         }
 
         return [
-            'label'  => __('Pending', 'hyoka'),
+            'label'  => __('Pending', 'hyoka-product-reviews'),
             'reason' => '',
         ];
     }

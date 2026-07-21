@@ -40,14 +40,14 @@ $hyoka_show_verified = ! isset($hyoka_style['show_verified_badge']) || ! empty($
     <div class="HYOKA-site-rating-info">
         <span class="HYOKA-total-count"><?php
                                         /* translators: %d: total number of reviews. */
-                                        printf(esc_html__('Based on %d reviews', 'hyoka'), (int) $hyoka_site_count);
+                                        printf(esc_html__('Based on %d reviews', 'hyoka-product-reviews'), (int) $hyoka_site_count);
                                         ?></span>
         <?php if ($hyoka_show_verified) : ?>
         <div class="HYOKA-verified-badge">
             <svg class="HYOKA-check-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l5-5z" clip-rule="evenodd" />
             </svg>
-            <span class="HYOKA-verified-text"><?php esc_html_e('Verified Store', 'hyoka'); ?></span>
+            <span class="HYOKA-verified-text"><?php esc_html_e('Verified Store', 'hyoka-product-reviews'); ?></span>
         </div>
         <?php endif; ?>
     </div>

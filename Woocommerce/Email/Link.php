@@ -304,15 +304,15 @@ class Link
             case 'expired':
                 return sprintf(
                     /* translators: %d: number of days invite links stay valid */
-                    __('This review link has expired. Review links are valid for %d days from when the email was sent.', 'hyoka'),
+                    __('This review link has expired. Review links are valid for %d days from when the email was sent.', 'hyoka-product-reviews'),
                     self::DEFAULT_EXPIRY_DAYS
                 );
             case 'consumed':
-                return __('This review link has already been used.', 'hyoka');
+                return __('This review link has already been used.', 'hyoka-product-reviews');
             case 'valid':
                 return '';
             default:
-                return __('This review link is invalid.', 'hyoka');
+                return __('This review link is invalid.', 'hyoka-product-reviews');
         }
     }
 

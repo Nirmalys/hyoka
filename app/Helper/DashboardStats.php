@@ -592,7 +592,7 @@ class DashboardStats
 
             $output[] = [
                 'id'      => $product_id,
-                'name'    => (string) ($product['name'] ?? __('Unknown Product', 'hyoka')),
+                'name'    => (string) ($product['name'] ?? __('Unknown Product', 'hyoka-product-reviews')),
                 'sku'     => (string) ($product['sku'] ?? ''),
                 'image'   => (string) ($product['image'] ?? ''),
                 'rating'  => number_format((float) ($row['avg_rating'] ?? 0), 1),
@@ -649,8 +649,8 @@ class DashboardStats
             $review_id  = absint($row['id'] ?? 0);
             $product_id = absint($row['product_id'] ?? 0);
             $product_name = $product_id > 0
-                ? (string) (($products[$product_id]['name'] ?? '') ?: __('a product', 'hyoka'))
-                : __('your store', 'hyoka');
+                ? (string) (($products[$product_id]['name'] ?? '') ?: __('a product', 'hyoka-product-reviews'))
+                : __('your store', 'hyoka-product-reviews');
 
             $content_data = Review::decodeReviewContent($row);
             $author       = self::shortReviewerName((string) ($content_data['author'] ?? ''));
@@ -667,7 +667,7 @@ class DashboardStats
                     'type'         => 'question',
                     'text'         => sprintf(
                         /* translators: %s: product name */
-                        __('Customer question answered on %s', 'hyoka'),
+                        __('Customer question answered on %s', 'hyoka-product-reviews'),
                         $product_name
                     ),
                     'occurred_at'  => $updated_at !== '' ? $updated_at : $created_at,
@@ -681,7 +681,7 @@ class DashboardStats
                     'type'         => 'reply',
                     'text'         => sprintf(
                         /* translators: %s: product name */
-                        __('You replied to a review on %s', 'hyoka'),
+                        __('You replied to a review on %s', 'hyoka-product-reviews'),
                         $product_name
                     ),
                     'occurred_at'  => $updated_at !== '' ? $updated_at : $created_at,
@@ -695,7 +695,7 @@ class DashboardStats
                     'type'         => 'video',
                     'text'         => sprintf(
                         /* translators: 1: reviewer name, 2: product name */
-                        __('%1$s uploaded a video review on %2$s', 'hyoka'),
+                        __('%1$s uploaded a video review on %2$s', 'hyoka-product-reviews'),
                         $author,
                         $product_name
                     ),
@@ -714,7 +714,7 @@ class DashboardStats
                 'type'         => 'review',
                 'text'         => sprintf(
                     /* translators: 1: reviewer name, 2: star rating, 3: product name */
-                    __('%1$s left a %2$d-star review on %3$s', 'hyoka'),
+                    __('%1$s left a %2$d-star review on %3$s', 'hyoka-product-reviews'),
                     $author,
                     $rating,
                     $product_name
@@ -777,7 +777,7 @@ class DashboardStats
                         '%1$d review imported from %2$s',
                         '%1$d reviews imported from %2$s',
                         $count,
-                        'hyoka'
+                        'hyoka-product-reviews'
                     ),
                     $count,
                     $source
@@ -838,7 +838,7 @@ class DashboardStats
                         'Review request email sent to %d customer',
                         'Review request email sent to %d customers',
                         $count,
-                        'hyoka'
+                        'hyoka-product-reviews'
                     ),
                     $count
                 ),
@@ -933,7 +933,7 @@ class DashboardStats
             }
 
             $products[$product_id] = [
-                'name'  => (string) ($row['name'] ?? __('Unknown Product', 'hyoka')),
+                'name'  => (string) ($row['name'] ?? __('Unknown Product', 'hyoka-product-reviews')),
                 'sku'   => (string) ($row['sku'] ?? ''),
                 'image' => $image,
                 'url'   => get_permalink($product_id) ?: '',
@@ -962,7 +962,7 @@ class DashboardStats
     {
         $author = trim($author);
         if ($author === '') {
-            return __('A customer', 'hyoka');
+            return __('A customer', 'hyoka-product-reviews');
         }
 
         $words = preg_split('/\s+/', $author) ?: [];
@@ -991,7 +991,7 @@ class DashboardStats
         }
 
         if ($source === '') {
-            return __('Import', 'hyoka');
+            return __('Import', 'hyoka-product-reviews');
         }
 
         return ucwords(str_replace(['_', '-'], ' ', $source));

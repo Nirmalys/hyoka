@@ -32,6 +32,12 @@ class Boot
 
     public static function onPluginsLoaded()
     {
+        load_plugin_textdomain(
+            HYOKA_TEXT_DOMAIN,
+            false,
+            dirname(plugin_basename(HYOKA_PLUGIN_FILE)) . '/languages'
+        );
+
         if (!Wooinit::isActive()) {
             return;
         }

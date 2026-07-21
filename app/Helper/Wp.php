@@ -617,8 +617,9 @@ class Wp
     /**
      * Build widget theme CSS from sanitized style tokens.
      *
-     * Security boundary: every interpolated value is validated before assembly.
-     * The returned string is passed directly to wp_add_inline_style().
+     * Only validated tokens (colors, lengths, font weights, allowlisted font stacks,
+     * absint clamps, enum allowlists) are interpolated. Output is attached via
+     * Assets::attachInlineCss(). No arbitrary CSS is accepted.
      *
      * @param array<string, mixed> $style
      */

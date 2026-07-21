@@ -79,6 +79,13 @@ class MediaUpload
             return;
         }
 
+        // Intent gate only: this hook runs on every front-end POST. Skip unrelated forms
+        // (checkout, contact, comments, etc.) before verifying our media-form nonce.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing via public query arg; CSRF verified immediately below.
+        if (! isset($_GET[self::QUERY_ARG])) {
+            return;
+        }
+
         // CSRF first — do not inspect $_FILES / $_POST until the media-form nonce passes.
         check_ajax_referer('media-form', 'media_nonce');
 
@@ -95,18 +102,18 @@ class MediaUpload
             : '';
 
         if ($review_id <= 0 || $token === '') {
-            wp_send_json_error(['message' => __('Invalid request.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Invalid request.', 'hyoka-product-reviews')]);
         }
 
         $model = new Review();
         $row   = $model->findById($review_id);
         if (! is_array($row)) {
-            wp_send_json_error(['message' => __('Review not found.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Review not found.', 'hyoka-product-reviews')]);
         }
 
         $email = sanitize_email((string) ($row['email'] ?? ''));
         if ($email === '' || ! self::verifyToken($review_id, $email, $token)) {
-            wp_send_json_error(['message' => __('This upload link is invalid or has expired.', 'hyoka')]);
+            wp_send_json_error(['message' => __('This upload link is invalid or has expired.', 'hyoka-product-reviews')]);
         }
 
         // Sanitize early / validate before WordPress processes the upload.
@@ -128,7 +135,7 @@ class MediaUpload
         // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         if ($name === '' || $tmp_name === '' || $error !== UPLOAD_ERR_OK || ! is_uploaded_file($tmp_name)) {
-            wp_send_json_error(['message' => __('Upload failed.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Upload failed.', 'hyoka-product-reviews')]);
         }
 
         // Early type check via WordPress (extension + file contents), not the client-supplied MIME.
@@ -138,7 +145,7 @@ class MediaUpload
             $type === ''
             || (strpos($type, 'image/') !== 0 && strpos($type, 'video/') !== 0)
         ) {
-            wp_send_json_error(['message' => __('Only images and videos are allowed.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Only images and videos are allowed.', 'hyoka-product-reviews')]);
         }
 
         // Prefer WordPress-corrected filename when the extension was remapped.
@@ -167,20 +174,20 @@ class MediaUpload
         $mime = get_post_mime_type($attachment_id);
         if (! is_string($mime) || $mime === '') {
             wp_delete_attachment($attachment_id, true);
-            wp_send_json_error(['message' => __('Unsupported file type.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Unsupported file type.', 'hyoka-product-reviews')]);
         }
 
         $is_video = strpos($mime, 'video/') === 0;
         $is_image = strpos($mime, 'image/') === 0;
         if (! $is_video && ! $is_image) {
             wp_delete_attachment($attachment_id, true);
-            wp_send_json_error(['message' => __('Only images and videos are allowed.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Only images and videos are allowed.', 'hyoka-product-reviews')]);
         }
 
         $url = wp_get_attachment_url($attachment_id);
         if (! is_string($url) || $url === '') {
             wp_delete_attachment($attachment_id, true);
-            wp_send_json_error(['message' => __('Upload failed.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Upload failed.', 'hyoka-product-reviews')]);
         }
 
         $item = [
@@ -193,12 +200,12 @@ class MediaUpload
 
         if (! Reviewing::appendReviewMedia($review_id, [$item])) {
             wp_delete_attachment($attachment_id, true);
-            wp_send_json_error(['message' => __('Could not save media to your review.', 'hyoka')]);
+            wp_send_json_error(['message' => __('Could not save media to your review.', 'hyoka-product-reviews')]);
         }
 
         wp_send_json_success([
             'media'   => $item,
-            'message' => __('Media uploaded successfully.', 'hyoka'),
+            'message' => __('Media uploaded successfully.', 'hyoka-product-reviews'),
         ]);
     }
 
@@ -219,26 +226,26 @@ class MediaUpload
 
         $row = (new \Hyoka\App\Model\Review())->findById($review_id);
         if (! is_array($row)) {
-            self::renderError(__('This upload link is invalid.', 'hyoka'));
+            self::renderError(__('This upload link is invalid.', 'hyoka-product-reviews'));
             return;
         }
 
         $email = sanitize_email((string) ($row['email'] ?? ''));
         if ($email === '' || ! self::verifyToken($review_id, $email, $token)) {
-            self::renderError(__('This upload link is invalid or has expired.', 'hyoka'));
+            self::renderError(__('This upload link is invalid or has expired.', 'hyoka-product-reviews'));
             return;
         }
 
         $existing_media = Wp::parseStoredMediaJson($row['media'] ?? '');
         if ($existing_media !== []) {
             self::renderComplete(
-                __('Media was already added to this review. This upload link is no longer available.', 'hyoka')
+                __('Media was already added to this review. This upload link is no longer available.', 'hyoka-product-reviews')
             );
             return;
         }
 
         $product_id = absint($row['product_id'] ?? 0);
-        $title      = $product_id > 0 ? (string) get_the_title($product_id) : __('Product', 'hyoka');
+        $title      = $product_id > 0 ? (string) get_the_title($product_id) : __('Product', 'hyoka-product-reviews');
         $permalink  = $product_id > 0 ? esc_url_raw((string) get_permalink($product_id)) : '';
 
         $settings = EmailSender::getSettings();
@@ -252,11 +259,11 @@ class MediaUpload
                 'mediaNonce'  => wp_create_nonce('media-form'),
                 'productUrl'  => $permalink !== '' ? $permalink : home_url('/'),
                 'strings'    => [
-                    'networkError' => __('Network error.', 'hyoka'),
-                    'error'        => __('Something went wrong.', 'hyoka'),
-                    'uploading'    => __('Uploading…', 'hyoka'),
-                    'success'      => __('Media uploaded successfully. Thank you!', 'hyoka'),
-                    'pickFile'     => __('Please choose a photo or video to upload.', 'hyoka'),
+                    'networkError' => __('Network error.', 'hyoka-product-reviews'),
+                    'error'        => __('Something went wrong.', 'hyoka-product-reviews'),
+                    'uploading'    => __('Uploading…', 'hyoka-product-reviews'),
+                    'success'      => __('Media uploaded successfully. Thank you!', 'hyoka-product-reviews'),
+                    'pickFile'     => __('Please choose a photo or video to upload.', 'hyoka-product-reviews'),
                 ],
             ]
         );
@@ -266,7 +273,7 @@ class MediaUpload
 
         $heading = esc_html(sprintf(
             /* translators: %s: product name */
-            __('Add photos or videos to your review for %s', 'hyoka'),
+            __('Add photos or videos to your review for %s', 'hyoka-product-reviews'),
             $title
         ));
 
@@ -283,11 +290,11 @@ class MediaUpload
         } else {
             echo '<p class="hyoka-media-product-link"><strong>' . esc_html($title) . '</strong></p>';
         }
-        echo '<p class="hyoka-media-intro">' . esc_html__('Choose files below to attach them to your review.', 'hyoka') . '</p>';
+        echo '<p class="hyoka-media-intro">' . esc_html__('Choose files below to attach them to your review.', 'hyoka-product-reviews') . '</p>';
         echo '<form id="hyoka-media-form" class="hyoka-media-form" method="post" action="#" enctype="multipart/form-data">';
-        echo '<label for="hyoka-media-input">' . esc_html__('Photos / videos', 'hyoka') . '</label>';
+        echo '<label for="hyoka-media-input">' . esc_html__('Photos / videos', 'hyoka-product-reviews') . '</label>';
         echo '<input type="file" id="hyoka-media-input" class="hyoka-media-input" name="review_media" accept="image/*,video/*" multiple>';
-        echo '<button type="submit" class="hyoka-invite-submit">' . esc_html__('Upload media', 'hyoka') . '</button>';
+        echo '<button type="submit" class="hyoka-invite-submit">' . esc_html__('Upload media', 'hyoka-product-reviews') . '</button>';
         echo '</form>';
         echo '<div id="hyoka-media-msg" class="hyoka-invite-msg" aria-live="polite"></div>';
         echo '<div class="hyoka-media-upload-status" aria-live="polite"></div>';
@@ -301,14 +308,14 @@ class MediaUpload
     {
         nocache_headers();
         status_header(404);
-        self::renderPlainMessage(__('Upload link', 'hyoka'), $message);
+        self::renderPlainMessage(__('Upload link', 'hyoka-product-reviews'), $message);
     }
 
     private static function renderComplete(string $message): void
     {
         nocache_headers();
         status_header(200);
-        self::renderPlainMessage(__('Upload complete', 'hyoka'), $message);
+        self::renderPlainMessage(__('Upload complete', 'hyoka-product-reviews'), $message);
     }
 
     private static function renderPlainMessage(string $title, string $message): void

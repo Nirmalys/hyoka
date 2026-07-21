@@ -32,7 +32,6 @@ class Boot
 
     public static function onPluginsLoaded()
     {
-    
         if (!Wooinit::isActive()) {
             return;
         }

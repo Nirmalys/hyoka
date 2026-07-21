@@ -21,9 +21,9 @@ defined('ABSPATH') || exit;
  * Dynamic CSS follows the WordPress pattern:
  * 1. Sanitize individual values (Wp::sanitizeHexColor(), sanitizeCssLength(), etc.).
  * 2. Generate CSS in get*CssVariablesBlock() builders from those tokens only.
- * 3. Pass the generated string directly to wp_add_inline_style().
+ * 3. Escape with wp_strip_all_tags() (WordPress has no esc_css()) and pass to wp_add_inline_style().
  *
- * WordPress has no esc_css(). Validation belongs in the generators, not at output.
+ * Validation belongs in the generators; output uses wp_strip_all_tags() for Plugin Check.
  */
 class Assets
 {
@@ -52,14 +52,11 @@ class Assets
      * Attach internally generated CSS variables to an already enqueued stylesheet.
      *
      * WordPress has no esc_css(). Using esc_html()/esc_attr() would corrupt CSS
-     * (e.g. quoted font stacks). Safety is enforced by the CSS builders only
-     * interpolating validated tokens:
+     * (e.g. quoted font stacks). Safety is enforced by:
+     * 1. CSS builders only interpolating validated tokens
+     * 2. wp_strip_all_tags() at output (Plugin Check–accepted CSS escape)
      *
-     * - Wp::getWidgetCssVariablesBlock()
-     * - SubmissionFormRender::getFormCssVariablesBlock()
-     * - SubmissionFormRender::getEmailPageCssVariablesBlock()
-     *
-     * Those builders use sanitizeHexColor(), sanitizeCssLength(), sanitizeCssFontWeight(),
+     * Builders use sanitizeHexColor(), sanitizeCssLength(), sanitizeCssFontWeight(),
      * fontStackCss() (allowlisted stacks), absint clamps, and enum whitelists.
      * Arbitrary / user-authored CSS is not accepted or stored (custom_css removed).
      *
@@ -72,8 +69,10 @@ class Assets
             return;
         }
 
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe: $css is generated only by internal CSS builder methods from validated tokens (colors, lengths, enums, allowlisted font stacks). WordPress provides no esc_css() equivalent, and esc_html()/esc_attr() would break valid CSS.
-        wp_add_inline_style($handle, $css);
+        // wp_strip_all_tags() is the WordPress.org–accepted way to escape CSS for
+        // wp_add_inline_style() (there is no esc_css()). Values were already sanitized
+        // by the CSS builders (hex colors, lengths, allowlisted font stacks, enums).
+        wp_add_inline_style($handle, wp_strip_all_tags($css));
     }
 
     /**

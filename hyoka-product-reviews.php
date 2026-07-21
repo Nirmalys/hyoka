@@ -11,7 +11,6 @@
  * Author:            YS Innovations
  * Author URI:        https://ysinnovations.com
  * Text Domain:       hyoka-product-reviews
- * Domain Path:       /languages
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */

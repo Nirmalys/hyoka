@@ -1,4 +1,5 @@
 import React from "react";
+import { sanitizeFontKey } from "../editorConfig";
 
 const GlobalStyleProperties = ({
   form,
@@ -43,14 +44,15 @@ const GlobalStyleProperties = ({
       <div>
         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Primary Font</label>
         <select
-          value={form.font_family || "system"}
-          onChange={(e) => updateField("font_family", e.target.value)}
+          value={sanitizeFontKey(form.font_family)}
+          onChange={(e) => updateField("font_family", sanitizeFontKey(e.target.value))}
           className="w-full px-3 py-2.5 rounded-md border border-gray-100 bg-gray-50 text-[13px] font-bold text-gray-900 focus:bg-white focus:border-gray-300 transition-all outline-none appearance-none cursor-pointer"
         >
           <option value="system">Standard Sans</option>
           <option value="arial">Arial</option>
           <option value="georgia">Georgia (Serif)</option>
           <option value="verdana">Verdana</option>
+          <option value="trebuchet">Trebuchet MS</option>
           <option value="times">Times New Roman</option>
         </select>
       </div>

@@ -21,12 +21,9 @@ class Review
     protected $hyoka_reviews_table;
 
     /**
-     * Request-scoped WHERE parts (placeholder SQL + bound params).
+     * Request-scoped prepared WHERE SQL (values already bound via $wpdb->prepare()).
      *
-     * @var array<string, array{
-     *     prepared_where_sql: string,
-     *     prepared_params: array<int, mixed>
-     * }>
+     * @var array<string, string>
      */
     private static $prepared_where_cache = [];
 
@@ -216,20 +213,13 @@ class Review
     {
         global $wpdb;
 
-        $parts = $this->buildWhereParts($args);
+        $where = $this->buildWhereSql($args);
         $table = self::getTableName();
 
-        // $parts['prepared_where_sql'] contains only internally generated SQL fragments with %s/%d
-        // placeholders. All user-controlled values are in prepared_params and bound via prepare().
-        // No user input is concatenated into the SQL string.
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table from getTableName(); WHERE SQL is placeholder-only; values bound via prepare().
-        $count = (int) $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table} WHERE {$parts['prepared_where_sql']}",
-                ...$parts['prepared_params']
-            )
-        );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // $where is already fully prepared (literal fragments + bound values). $table is plugin-owned.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); $where from buildWhereSql() (per-clause $wpdb->prepare()).
+        $count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} WHERE {$where}");
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         return $count;
     }
@@ -380,7 +370,7 @@ class Review
         ];
         $args = wp_parse_args($args, $defaults);
 
-        $parts    = $this->buildWhereParts($args);
+        $where    = $this->buildWhereSql($args);
         $per_page = max(1, absint($args['per_page'] ?? 20));
         $offset   = max(0, (absint($args['page']) - 1) * $per_page);
 
@@ -396,19 +386,15 @@ class Review
 
         $table = self::getTableName();
 
-        // $parts['prepared_where_sql'] contains only internally generated SQL fragments with %s/%d
-        // placeholders. All user-controlled values are in prepared_params (plus LIMIT/OFFSET) and
-        // bound via prepare(). No user input is concatenated into the SQL string.
-        // ORDER BY / ORDER use allowlisted identifiers only (cannot be prepared as values).
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table from getTableName(); WHERE is placeholder-only; $orderby/$order allowlisted; all values bound via prepare().
+        // $where already prepared per-clause; LIMIT/OFFSET are absint (safe to interpolate).
+        // ORDER BY / ORDER are allowlisted identifiers only.
+        // Do not wrap $where in a second prepare() — LIKE clauses may contain literal % wildcards.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); $where from buildWhereSql(); $orderby/$order allowlisted; LIMIT/OFFSET absint.
         $rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM {$table} WHERE {$parts['prepared_where_sql']} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d",
-                ...array_merge($parts['prepared_params'], [$per_page, $offset])
-            ),
+            "SELECT * FROM {$table} WHERE {$where} ORDER BY {$orderby} {$order} LIMIT {$per_page} OFFSET {$offset}",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         return is_array($rows) ? $rows : [];
     }
@@ -609,14 +595,14 @@ class Review
 
     public static function normalizeStatus(string $status): string
     {
-        $status  = strtolower(sanitize_text_field($status));
+        $status  = sanitize_key($status);
         $allowed = ['pending', 'approved', 'rejected', 'spam'];
 
         return in_array($status, $allowed, true) ? $status : 'pending';
     }
 
     /**
-     * Normalize filter args before they reach buildWhereParts().
+     * Normalize filter args before they reach buildWhereSql().
      * Status may be empty/"all" (no filter) or an allowlisted value via normalizeStatus().
      * View / media_type are sanitized keys and only matched against fixed branches.
      *
@@ -643,7 +629,7 @@ class Review
             $media_type = '';
         }
 
-        $status_raw = strtolower(sanitize_text_field((string) ($args['status'] ?? '')));
+        $status_raw = sanitize_key((string) ($args['status'] ?? ''));
         if ($status_raw !== '' && $status_raw !== 'all') {
             $status_raw = self::normalizeStatus($status_raw);
         }
@@ -723,19 +709,19 @@ class Review
     }
 
     /**
-     * Build a WHERE clause as placeholder SQL + bound parameter values.
+     * Build a fully prepared WHERE clause (values bound via per-clause $wpdb->prepare()).
      *
-     * WordPress.org / wpdb pattern: the returned prepared_where_sql string contains only fixed
-     * column names and %s/%d placeholders — never raw user input. Callers must
-     * pass prepared_params to a single $wpdb->prepare() on the full query.
+     * Each fragment uses a string-literal query in prepare() so Plugin Check never sees a
+     * dynamic placeholder string interpolated into a larger prepare() call. Callers must
+     * concatenate the returned SQL as-is — do not pass it through prepare() again (LIKE
+     * clauses may contain literal % wildcards).
      *
      * Results are memoized for the request so countMany() + findMany() share one build
      * (and one product-title/SKU lookup) during pagination.
      *
      * @param array<string, mixed> $args
-     * @return array{prepared_where_sql: string, prepared_params: array<int, mixed>}
      */
-    private function buildWhereParts(array $args): array
+    private function buildWhereSql(array $args): string
     {
         global $wpdb;
 
@@ -746,55 +732,36 @@ class Review
         }
 
         $clauses = [];
-        $params  = [];
 
         $emails    = self::systemEmails();
-        $clauses[] = 'email NOT IN (%s, %s)';
-        $params[]  = $emails[0];
-        $params[]  = $emails[1];
+        $clauses[] = $wpdb->prepare('email NOT IN (%s, %s)', $emails[0], $emails[1]);
 
-        if ($where_args['status'] !== '' && strtolower($where_args['status']) !== 'all') {
-            $clauses[] = 'status = %s';
-            $params[]  = self::normalizeStatus($where_args['status']);
+        if ($where_args['status'] !== '' && sanitize_key((string) $where_args['status']) !== 'all') {
+            $clauses[] = $wpdb->prepare('status = %s', self::normalizeStatus($where_args['status']));
         }
 
         if ($where_args['product_ids'] !== []) {
-            $ids          = $where_args['product_ids'];
-            $placeholders = implode(',', array_fill(0, count($ids), '%d'));
-            $clauses[]    = "product_id IN ({$placeholders})";
-            foreach ($ids as $id) {
-                $params[] = $id;
-            }
+            $clauses[] = 'product_id IN (' . Wp::prepareInIntegers($where_args['product_ids']) . ')';
         } elseif ($where_args['product_id'] > 0) {
-            $clauses[] = 'product_id = %d';
-            $params[]  = $where_args['product_id'];
+            $clauses[] = $wpdb->prepare('product_id = %d', $where_args['product_id']);
         }
 
         if ($where_args['rating'] > 0) {
-            $clauses[] = 'rating = %d';
-            $params[]  = $where_args['rating'];
+            $clauses[] = $wpdb->prepare('rating = %d', $where_args['rating']);
         }
 
         if ($where_args['search'] !== '') {
             $search         = '%' . $wpdb->esc_like($where_args['search']) . '%';
             $search_clauses = [
-                'email LIKE %s',
-                'content LIKE %s',
-                'store_review LIKE %s',
-                'question LIKE %s',
+                $wpdb->prepare('email LIKE %s', $search),
+                $wpdb->prepare('content LIKE %s', $search),
+                $wpdb->prepare('store_review LIKE %s', $search),
+                $wpdb->prepare('question LIKE %s', $search),
             ];
-            $params[] = $search;
-            $params[] = $search;
-            $params[] = $search;
-            $params[] = $search;
 
             $matched_product_ids = $this->findProductIdsMatchingSearch($where_args['search']);
             if ($matched_product_ids !== []) {
-                $placeholders     = implode(',', array_fill(0, count($matched_product_ids), '%d'));
-                $search_clauses[] = "product_id IN ({$placeholders})";
-                foreach ($matched_product_ids as $id) {
-                    $params[] = $id;
-                }
+                $search_clauses[] = 'product_id IN (' . Wp::prepareInIntegers($matched_product_ids) . ')';
             }
 
             $clauses[] = '(' . implode(' OR ', $search_clauses) . ')';
@@ -803,56 +770,72 @@ class Review
         if ($where_args['view'] !== '') {
             $view = $where_args['view'];
             if ($view === 'questions') {
-                $clauses[] = 'question != %s AND (reply IS NULL OR reply = %s)';
-                $params[]  = '';
-                $params[]  = '';
+                $clauses[] = $wpdb->prepare(
+                    'question != %s AND (reply IS NULL OR reply = %s)',
+                    '',
+                    ''
+                );
             } elseif ($view === 'store_reviews') {
-                $clauses[] = '(COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))';
-                foreach (self::SQL_STORE_REVIEWS_PARAMS as $value) {
-                    $params[] = $value;
-                }
+                // Explicit args (not ...const) so PHPCS can count prepare() replacements.
+                $clauses[] = $wpdb->prepare(
+                    '(COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s))',
+                    '',
+                    '',
+                    0,
+                    '',
+                    ''
+                );
             } elseif ($view === 'replies') {
-                $clauses[] = 'reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)';
-                foreach (self::storeRepliesScopeParams() as $value) {
-                    $params[] = $value;
-                }
+                $clauses[] = $wpdb->prepare(
+                    'reply != %s AND ((COALESCE(store_review, %s) != %s OR (product_id = %d AND (question IS NULL OR question = %s) AND content IS NOT NULL AND content != %s)) OR question != %s)',
+                    '',
+                    '',
+                    '',
+                    0,
+                    '',
+                    '',
+                    ''
+                );
             }
         } else {
-            $clauses[] = 'product_id > %d AND (question IS NULL OR question = %s)';
-            foreach (self::SQL_PRODUCT_REVIEWS_PARAMS as $value) {
-                $params[] = $value;
-            }
+            $clauses[] = $wpdb->prepare(
+                'product_id > %d AND (question IS NULL OR question = %s)',
+                0,
+                ''
+            );
         }
 
         if ($where_args['media_type'] !== '') {
             $type = $where_args['media_type'];
             if ($type === 'visual') {
-                $clauses[] = '(media LIKE %s OR media LIKE %s)';
-                $params[]  = '%' . $wpdb->esc_like('"type":"image"') . '%';
-                $params[]  = '%' . $wpdb->esc_like('"type":"video"') . '%';
+                $clauses[] = $wpdb->prepare(
+                    '(media LIKE %s OR media LIKE %s)',
+                    '%' . $wpdb->esc_like('"type":"image"') . '%',
+                    '%' . $wpdb->esc_like('"type":"video"') . '%'
+                );
             } elseif (in_array($type, ['image', 'video'], true)) {
-                $clauses[] = 'media LIKE %s';
-                $params[]  = '%' . $wpdb->esc_like('"type":"' . $type . '"') . '%';
+                $clauses[] = $wpdb->prepare(
+                    'media LIKE %s',
+                    '%' . $wpdb->esc_like('"type":"' . $type . '"') . '%'
+                );
             }
         }
 
-        $result = [
-            'prepared_where_sql' => implode(' AND ', $clauses),
-            'prepared_params'    => $params,
-        ];
-        self::$prepared_where_cache[$memo_key] = $result;
+        $where = implode(' AND ', $clauses);
+        self::$prepared_where_cache[$memo_key] = $where;
 
-        return $result;
+        return $where;
     }
 
     /**
-     * Placeholder-only WHERE for review stats (histogram / averages).
+     * Fully prepared WHERE for review stats (histogram / averages).
      *
      * @param array<string, mixed> $args Supports product_id, status, product_reviews_only.
-     * @return array{prepared_where_sql: string, prepared_params: array<int, mixed>}
      */
-    private static function buildStatsWhereParts(array $args): array
+    private static function buildStatsWhereSql(array $args): string
     {
+        global $wpdb;
+
         $product_id    = isset($args['product_id']) ? absint($args['product_id']) : 0;
         $related       = $product_id > 0 ? Reviewing::getRelatedProductIds($product_id) : [];
         $use_multi     = $product_id > 0 && count($related) > 1;
@@ -860,31 +843,30 @@ class Review
         $product_only  = ! empty($args['product_reviews_only']);
         $system_emails = self::systemEmails();
 
-        $clauses = ['status = %s AND email NOT IN (%s, %s) AND rating BETWEEN 1 AND 5'];
-        $params  = [$status, $system_emails[0], $system_emails[1]];
+        $clauses = [
+            $wpdb->prepare(
+                'status = %s AND email NOT IN (%s, %s) AND rating BETWEEN 1 AND 5',
+                $status,
+                $system_emails[0],
+                $system_emails[1]
+            ),
+        ];
 
         if ($use_multi) {
-            $placeholders = implode(',', array_fill(0, count($related), '%d'));
-            $clauses[]    = "product_id IN ({$placeholders})";
-            foreach ($related as $id) {
-                $params[] = $id;
-            }
+            $clauses[] = 'product_id IN (' . Wp::prepareInIntegers($related) . ')';
         } elseif ($product_id > 0) {
-            $clauses[] = 'product_id = %d';
-            $params[]  = $product_id;
+            $clauses[] = $wpdb->prepare('product_id = %d', $product_id);
         }
 
         if ($product_only) {
-            $clauses[] = 'product_id > %d AND (question IS NULL OR question = %s)';
-            foreach (self::SQL_PRODUCT_REVIEWS_PARAMS as $value) {
-                $params[] = $value;
-            }
+            $clauses[] = $wpdb->prepare(
+                'product_id > %d AND (question IS NULL OR question = %s)',
+                0,
+                ''
+            );
         }
 
-        return [
-            'prepared_where_sql' => implode(' AND ', $clauses),
-            'prepared_params'    => $params,
-        ];
+        return implode(' AND ', $clauses);
     }
 
     // —— Plugin settings row (hyoka_reviews.email = plugin_settings) ——
@@ -1080,7 +1062,7 @@ class Review
             if ($key === '') {
                 continue;
             }
-            $normalized[$key] = strtolower(trim((string) $status));
+            $normalized[$key] = sanitize_key((string) $status);
         }
 
         return $normalized;
@@ -1186,26 +1168,20 @@ class Review
             return $cached;
         }
 
-        $system_emails = self::systemEmails();
-        $stats_args    = [
+        $stats_args = [
             'product_id'           => $product_id,
             'status'               => $status,
             'product_reviews_only' => $product_only,
         ];
-        $parts         = self::buildStatsWhereParts($stats_args);
+        $where = self::buildStatsWhereSql($stats_args);
 
-        // $parts['prepared_where_sql'] contains only internally generated SQL fragments with %s/%d
-        // placeholders. All user-controlled values are in prepared_params and bound via prepare().
-        // No user input is concatenated into the SQL string.
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table from getTableName(); WHERE is placeholder-only; values bound via prepare().
+        // $where is already fully prepared (per-clause $wpdb->prepare()). $table is plugin-owned.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from getTableName(); $where from buildStatsWhereSql().
         $histogram_rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT rating, COUNT(*) as count FROM {$table} WHERE {$parts['prepared_where_sql']} GROUP BY rating",
-                ...$parts['prepared_params']
-            ),
+            "SELECT rating, COUNT(*) as count FROM {$table} WHERE {$where} GROUP BY rating",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         $histogram = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
         $total     = 0;

@@ -14,6 +14,7 @@ namespace Hyoka\Woocommerce\Email;
 use Hyoka\App\Helper\Assets;
 use Hyoka\App\Helper\SubmissionFormRender;
 use Hyoka\App\Helper\Customers;
+use Hyoka\App\Helper\Wp;
 
 defined('ABSPATH') || exit;
 
@@ -149,7 +150,8 @@ class ReviewInvite
         echo '<input type="hidden" name="product_id" value="' . esc_attr((string) $product_id) . '">';
         echo '<input type="hidden" name="review_type" value="review">';
 
-        SubmissionFormRender::renderInviteFormFields($settings, $customer);
+        $invite_fields_html = SubmissionFormRender::renderInviteFormFields($settings, $customer);
+        echo wp_kses($invite_fields_html, Wp::reviewFormAllowedHtml());
 
         echo '</form>';
         echo '<div id="hyoka-msg" class="hyoka-invite-msg"></div>';
@@ -166,7 +168,8 @@ class ReviewInvite
         status_header(404);
         header('Content-Type: text/html; charset=' . get_option('blog_charset'));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
-        echo '<title>' . esc_html__('Review link', 'hyoka-product-reviews') . '</title></head><body style="font-family:system-ui;padding:40px;">';
+        $font = Wp::fontStackCss('system');
+        echo '<title>' . esc_html__('Review link', 'hyoka-product-reviews') . '</title></head><body style="font-family:' . esc_attr($font) . ';padding:40px;">';
         echo '<p>' . esc_html($message) . '</p>';
         echo '</body></html>';
         exit;

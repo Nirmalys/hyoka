@@ -895,20 +895,18 @@ class DashboardStats
         }
 
         global $wpdb;
-        $placeholders = implode(',', array_fill(0, count($product_ids), '%d'));
+        $in_list = Wp::prepareInIntegers($product_ids);
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- IN() placeholders are generated %d tokens only; IDs are absint()-sanitized and bound via prepare().
+        // $in_list is per-value prepare('%d'); core tables via $wpdb->posts / $wpdb->postmeta.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Core $wpdb->posts/$wpdb->postmeta; IN() from Wp::prepareInIntegers() (Plugin Check does not treat that helper as a sanitizer).
         $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.ID, p.post_title AS name, pm.meta_value AS sku
-                FROM {$wpdb->posts} p
-                LEFT JOIN {$wpdb->postmeta} pm ON (p.ID = pm.post_id AND pm.meta_key = '_sku')
-                WHERE p.ID IN ($placeholders)",
-                ...$product_ids
-            ),
+            "SELECT p.ID, p.post_title AS name, pm.meta_value AS sku
+            FROM {$wpdb->posts} p
+            LEFT JOIN {$wpdb->postmeta} pm ON (p.ID = pm.post_id AND pm.meta_key = '_sku')
+            WHERE p.ID IN ({$in_list})",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         $products = [];
         if (! is_array($results)) {

@@ -19,8 +19,8 @@ defined('ABSPATH') || exit;
  * Enqueues plugin styles and attaches dynamic CSS through wp_add_inline_style().
  *
  * Dynamic CSS follows the WordPress pattern:
- * 1. Sanitize at the builder site with core sanitize_hex_color() and Wp::fontStackCss()
- *    (FONT_STACKS allow-list via sanitizeFontKey()).
+ * 1. Sanitize at the builder site with core sanitize_hex_color() and
+ *    Wp::fontStackCss() (FONT_STACKS allow-list via sanitizeFontKey()).
  * 2. Generate CSS in get*CssVariablesBlock() builders from those tokens only.
  * 3. Escape with wp_strip_all_tags() (WordPress has no esc_css()) and pass to wp_add_inline_style().
  *
@@ -57,8 +57,9 @@ class Assets
      * 1. CSS builders only interpolating validated tokens
      * 2. wp_strip_all_tags() at output (Plugin Check–accepted CSS escape)
      *
-     * Builders use core sanitize_hex_color(), Wp::fontStackCss() (FONT_STACKS allow-list),
-     * sanitizeCssLength(), sanitizeCssFontWeight(), absint clamps, and enum whitelists.
+     * Builders use core sanitize_hex_color(), Wp::fontStackCss() (FONT_STACKS
+     * allow-list), sanitizeCssLength(), sanitizeCssFontWeight(), absint clamps,
+     * and enum whitelists.
      * Arbitrary / user-authored CSS is not accepted or stored (custom_css removed).
      *
      * @param string $handle Registered stylesheet handle.

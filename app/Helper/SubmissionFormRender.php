@@ -190,10 +190,12 @@ class SubmissionFormRender
     }
 
     /**
+     * Build invite-page form field markup (escaped fragments; caller must wp_kses on echo).
+     *
      * @param array<string, mixed> $settings
      * @param array{name: string, email: string} $customer
      */
-    public static function renderInviteFormFields(array $settings, array $customer): void
+    public static function renderInviteFormFields(array $settings, array $customer): string
     {
         $form_subtitle = (string) ($settings['form_subtitle'] ?? '');
         $submit_label = (string) ($settings['submit_button_text'] ?? __('Submit Review', 'hyoka-product-reviews'));
@@ -215,6 +217,8 @@ class SubmissionFormRender
 
         $customer_name  = (string) ($customer['name'] ?? '');
         $customer_email = (string) ($customer['email'] ?? '');
+
+        ob_start();
 
         if ($form_subtitle !== '') {
             echo '<p class="subtitle">' . esc_html($form_subtitle) . '</p>';
@@ -281,6 +285,8 @@ class SubmissionFormRender
         echo '<div class="hyoka-invite-submit-wrap">';
         echo '<button type="submit" class="hyoka-invite-submit">' . esc_html($submit_label) . '</button>';
         echo '</div>';
+
+        return (string) ob_get_clean();
     }
 
     /**
@@ -296,7 +302,7 @@ class SubmissionFormRender
         // Core sanitize_hex_color() at the CSS interpolation site (Plugin Check recognizes it).
         $primary = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
         $text    = sanitize_hex_color((string) ($settings['text_color'] ?? '')) ?: '#1D2939';
-        // Allowlisted stacks only — Wp::sanitizeFontKey() + FONT_STACKS.
+        // Allowlisted stacks only (FONT_STACKS via fontStackCss) — safe for CSS variables.
         $font = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
 
         return '.HYOKA-review-form--styled{'
@@ -321,7 +327,7 @@ class SubmissionFormRender
         $primary = sanitize_hex_color((string) ($settings['primary_color'] ?? '')) ?: '#F59E0B';
         $accent  = sanitize_hex_color((string) ($settings['accent_color'] ?? '')) ?: '#FDB022';
         $text    = sanitize_hex_color((string) ($settings['text_color'] ?? '')) ?: '#111827';
-        // Allowlisted stacks only — Wp::sanitizeFontKey() + FONT_STACKS.
+        // Allowlisted stacks only (FONT_STACKS via fontStackCss) — safe for CSS.
         $font = Wp::fontStackCss((string) ($settings['font_family'] ?? 'system'));
 
         return 'body{'

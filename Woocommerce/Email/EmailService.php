@@ -145,19 +145,21 @@ class EmailService
         string $font_key
     ): string {
         $primary = sanitize_hex_color($primary_color) ?: '#F59E0B';
-        // Allowlisted stacks only — sanitizeFontKey() + FONT_STACKS; esc_attr for style= context.
-        $font = esc_attr(Wp::fontStackCss($font_key));
+        // Allowlisted font stack, then esc_attr for style="" (escape late).
+        $font_stack  = Wp::fontStackCss($font_key);
+        $font        = esc_attr($font_stack);
+        $bg_color    = esc_attr('#F9FAFB');
+        $primary_esc = esc_attr($primary);
 
         $heading_safe    = esc_html($heading_html);
         $inner_body_html = Wp::sanitizeEmailInnerHtml($inner_body_html);
 
-        $bg_color = '#F9FAFB';
-
-        $body_style    = 'margin:0;padding:0;background-color:' . esc_attr($bg_color) . ';font-family:' . $font . ';-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;';
-        $wrapper_style = 'width:100%;table-layout:fixed;background-color:' . esc_attr($bg_color) . ';padding-bottom:40px;';
+        // Fragments below are already attribute-escaped; do not esc_attr() the whole string again.
+        $body_style    = 'margin:0;padding:0;background-color:' . $bg_color . ';font-family:' . $font . ';-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;';
+        $wrapper_style = 'width:100%;table-layout:fixed;background-color:' . $bg_color . ';padding-bottom:40px;';
         $table_style   = 'border-collapse:collapse;';
         $main_style    = 'background-color:#ffffff;margin:0 auto;width:100%;max-width:600px;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB;';
-        $header_style  = 'background-color:' . esc_attr($primary) . ';padding:40px 20px;text-align:center;';
+        $header_style  = 'background-color:' . $primary_esc . ';padding:40px 20px;text-align:center;';
         $h1_style      = 'margin:0;color:#ffffff;font-size:28px;font-weight:700;line-height:1.2;';
         $content_style = 'padding:40px 30px;color:#374151;font-size:16px;line-height:1.6;';
         $footer_style  = 'padding:20px;text-align:center;color:#9CA3AF;font-size:13px;';

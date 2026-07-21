@@ -36,7 +36,7 @@ class Reviewing
             return;
         }
 
-        $review_type = strtolower((string) $review_type) === 'question' ? 'question' : 'review';
+        $review_type = sanitize_key((string) $review_type) === 'question' ? 'question' : 'review';
         if ($review_type === 'review' && empty($settings['admin_notify_new_review'])) {
             return;
         }
@@ -542,7 +542,7 @@ class Reviewing
     private static function isWidgetStatusActive($status): bool
     {
         return in_array(
-            strtolower(trim((string) $status)),
+            sanitize_key((string) $status),
             ['active', '1', 'true', 'yes', 'on'],
             true
         );
@@ -590,7 +590,7 @@ class Reviewing
         $placements = Review::getWidgetPlacements();
         $placement  = $placements[$widget_id] ?? '';
 
-        return strtolower((string) $placement) === 'shortcode' ? 'shortcode' : '';
+        return sanitize_key((string) $placement) === 'shortcode' ? 'shortcode' : '';
     }
 
     public static function getWidgetStatusLabel(string $widget_id): string
@@ -713,7 +713,7 @@ class Reviewing
             }
 
             if ($placement !== null) {
-                if (strtolower($placement) === 'shortcode') {
+                if (sanitize_key((string) $placement) === 'shortcode') {
                     $placements[$widget_id] = 'shortcode';
                 } else {
                     unset($placements[$widget_id]);
@@ -1243,18 +1243,16 @@ class Reviewing
         }
 
         global $wpdb;
-        $placeholders = implode(',', array_fill(0, count($review_ids), '%d'));
-        $table        = ImportRecord::getTableName();
+        $in_list = Wp::prepareInIntegers($review_ids);
+        $table   = ImportRecord::getTableName();
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned table from getTableName(); IN() placeholders are fixed %d tokens built before prepare().
+        // $in_list is per-value $wpdb->prepare('%d'); $table is plugin-owned.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); IN() list from Wp::prepareInIntegers().
         $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT review_id, source FROM {$table} WHERE review_id IN ($placeholders)",
-                ...$review_ids
-            ),
+            "SELECT review_id, source FROM {$table} WHERE review_id IN ({$in_list})",
             ARRAY_A
         );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         $sources = [];
         if (! is_array($results)) {
@@ -1295,17 +1293,18 @@ class Reviewing
             },
             $review_ids
         );
-        $placeholders = implode(' OR ', array_fill(0, count($likes), 'review LIKE %s'));
-        $table        = Customer::getTableName();
 
-        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Plugin-owned table from getTableName(); LIKE placeholders are fixed %s tokens built before prepare().
-        $rows = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT review FROM {$table} WHERE ($placeholders)",
-                ...$likes
-            )
-        );
-        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $like_clauses = [];
+        foreach ($likes as $like) {
+            $like_clauses[] = $wpdb->prepare('review LIKE %s', $like);
+        }
+        $where = implode(' OR ', $like_clauses);
+        $table = Customer::getTableName();
+
+        // $where is per-clause prepare(); $table is plugin-owned. Do not wrap $where in prepare() again (literal % wildcards).
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table from getTableName(); LIKE clauses prepared individually.
+        $rows = $wpdb->get_col("SELECT review FROM {$table} WHERE ({$where})");
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         if (! is_array($rows)) {
             return $sources;
@@ -1447,20 +1446,18 @@ class Reviewing
         }
 
         global $wpdb;
-        $placeholders = implode(',', array_fill(0, count($product_ids), '%d'));
+        $in_list = Wp::prepareInIntegers($product_ids);
 
-        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic IN() placeholders are generated entirely from %d tokens before prepare(); core tables via $wpdb->posts/$wpdb->postmeta.
+        // $in_list is per-value prepare('%d'); core tables via $wpdb->posts / $wpdb->postmeta.
+        // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Core $wpdb->posts/$wpdb->postmeta; IN() from Wp::prepareInIntegers() (Plugin Check does not treat that helper as a sanitizer).
         $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.ID, p.post_title AS name, pm.meta_value AS sku
-                FROM {$wpdb->posts} p
-                LEFT JOIN {$wpdb->postmeta} pm ON (p.ID = pm.post_id AND pm.meta_key = '_sku')
-                WHERE p.ID IN ($placeholders)",
-                ...$product_ids
-            ),
+            "SELECT p.ID, p.post_title AS name, pm.meta_value AS sku
+            FROM {$wpdb->posts} p
+            LEFT JOIN {$wpdb->postmeta} pm ON (p.ID = pm.post_id AND pm.meta_key = '_sku')
+            WHERE p.ID IN ({$in_list})",
             ARRAY_A
         );
-        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
         $batch_data = [];
         if (! is_array($results)) {

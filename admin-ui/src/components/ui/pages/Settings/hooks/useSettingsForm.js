@@ -26,7 +26,7 @@ import {
   emailTemplatesSnapshot,
   emailTemplatesEqual,
 } from "../components/tab/email/emailTemplatesConfig";
-import { previewFontStack as resolvePreviewFontStack } from "../../editor/editorConfig";
+import { previewFontStack as resolvePreviewFontStack, sanitizeFontKey } from "../../editor/editorConfig";
 
 let cachedSettingsPayload = null;
 let settingsLoadPromise = null;
@@ -253,7 +253,7 @@ export const useSettingsForm = () => {
       body: s.body || "",
       primary_color: normalizeHexInput(s.primary_color) || "#F59E0B",
       accent_color: normalizeHexInput(s.accent_color) || "#fdb022",
-      font_family: s.font_family || "system",
+      font_family: sanitizeFontKey(s.font_family || "system"),
       email_layouts: parseEmailLayouts(s.email_layouts),
       email_layout_block_styles: parseEmailLayoutBlockStyles(s.email_layout_block_styles),
       email_header_size: s.email_header_size || "24px",

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import axiosClient from "../../../../axiosClient";
 import { reportCaughtError } from "../../../../../utils/apiError";
-import { previewFontStack } from "../../editor/editorConfig";
+import { previewFontStack, sanitizeFontKey } from "../../editor/editorConfig";
 import { EXTENDED_WIDGET_STYLE_DEFAULTS, pickExtendedStyles } from "../utils/widgetStyleFields";
 
 const buildStylePayload = (form, widgetId) => ({
@@ -11,7 +11,7 @@ const buildStylePayload = (form, widgetId) => ({
   widget_subtitle: form.widget_subtitle,
   primary_color: form.primary_color,
   accent_color: form.accent_color,
-  font_family: form.font_family,
+  font_family: sanitizeFontKey(form.font_family),
   card_radius: form.card_radius,
   card_gap: form.card_gap,
   border_color: form.border_color,
@@ -92,7 +92,7 @@ export const useWidgetStyles = (widgetId) => {
       widget_subtitle: style?.widget_subtitle || "",
       primary_color: style?.primary_color || "#F59E0B",
       accent_color: style?.accent_color || "#FDB022",
-      font_family: style?.font_family || "system",
+      font_family: sanitizeFontKey(style?.font_family || "system"),
       card_radius: Number(style?.card_radius) || 12,
       card_gap: Number(style?.card_gap) || 24,
       border_color: style?.border_color || "#EAECF0",

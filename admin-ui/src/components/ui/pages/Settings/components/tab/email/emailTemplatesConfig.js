@@ -1,3 +1,5 @@
+import { sanitizeFontKey } from "../../../../editor/editorConfig";
+
 export const DEFAULT_SMART_EMAIL_ELEMENTS = [
   { id: "e1", type: "text", content: "Hi {customer_name}," },
   { id: "e2", type: "image", url: "{product_image_url}" },
@@ -153,7 +155,7 @@ export const emailTemplatesSnapshot = (form) => ({
   body: String(form?.body ?? ""),
   primary_color: String(form?.primary_color ?? ""),
   accent_color: String(form?.accent_color ?? ""),
-  font_family: String(form?.font_family ?? "system"),
+  font_family: sanitizeFontKey(form?.font_family ?? "system"),
   email_preheader: String(form?.email_preheader ?? ""),
   email_header_size: String(form?.email_header_size ?? ""),
   email_text_size: String(form?.email_text_size ?? ""),

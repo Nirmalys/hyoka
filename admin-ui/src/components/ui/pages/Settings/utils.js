@@ -1,5 +1,7 @@
 /** Utility functions and constants for Settings screen */
 
+import { sanitizeFontKey } from "../editor/editorConfig";
+
 export const DEFAULT_SPAM_KEYWORDS =
   "free money, click here, viagra, casino, lottery, winner, http://, bit.ly, buy now, limited offer";
 
@@ -229,7 +231,7 @@ export const buildTemplateAjaxPayload = (form, templateId = null) => {
     body: form.body || "",
     primary_color: form.primary_color,
     accent_color: form.accent_color,
-    font_family: form.font_family,
+    font_family: sanitizeFontKey(form.font_family),
     email_elements: JSON.stringify(form.email_elements),
     form_elements: JSON.stringify(form.form_elements),
     allow_photos: boolAjaxFlag(form.allow_photos),

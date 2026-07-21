@@ -32,7 +32,7 @@ class Wp
      */
     public static function sanitizeFontKey(string $key): string
     {
-        $key = strtolower(preg_replace('/[^a-z]/', '', $key));
+        $key = sanitize_key($key);
 
         return array_key_exists($key, self::FONT_STACKS) ? $key : 'system';
     }
@@ -40,14 +40,13 @@ class Wp
     /**
      * Return a fixed CSS font-family stack for a (sanitized) key.
      *
-     * Safe for CSS / style attributes: only FONT_STACKS literals are returned;
-     * callers never interpolate raw user font strings.
+     * FONT_STACKS literals only — never raw user input.
+     * - CSS (wp_add_inline_style): use as-is.
+     * - HTML style="": $font = Wp::fontStackCss( $key ); echo esc_attr( $font );
      */
     public static function fontStackCss(string $key): string
     {
-        $key = self::sanitizeFontKey($key);
-
-        return self::FONT_STACKS[$key];
+        return self::FONT_STACKS[self::sanitizeFontKey($key)];
     }
 
     /**
@@ -67,7 +66,7 @@ class Wp
 
     public static function sanitizeTextAlign(string $align): string
     {
-        $align = strtolower(sanitize_key($align));
+        $align = sanitize_key($align);
 
         return in_array($align, ['left', 'center', 'right'], true) ? $align : 'center';
     }
@@ -76,6 +75,7 @@ class Wp
      * Safe CSS length for font-size / height style attributes (rejects `;` injection).
      *
      * Whitelist: 0, 12px, 1rem, 0.5em, 100%. Rejects calc(), url(), and property injection.
+     * Note: do not use sanitize_key() here — it strips `.` from values like 0.5em / 1.6.
      */
     public static function sanitizeCssLength(string $value, string $fallback = '14px'): string
     {
@@ -94,7 +94,7 @@ class Wp
      */
     public static function sanitizeCssFontWeight(string $value, string $fallback = '400'): string
     {
-        $value = strtolower(trim(sanitize_text_field($value)));
+        $value   = sanitize_key($value);
         $allowed = ['100', '200', '300', '400', '500', '600', '700', '800', '900', 'normal', 'bold'];
 
         return in_array($value, $allowed, true) ? $value : $fallback;
@@ -102,15 +102,24 @@ class Wp
 
     /**
      * Safe CSS line-height (unitless, length, or keyword normal).
+     *
+     * Keyword uses sanitize_key(); numeric lengths keep sanitize_text_field + regex
+     * (sanitize_key would strip the decimal point).
      */
     public static function sanitizeCssLineHeight(string $value, string $fallback = '1.6'): string
     {
-        $value = strtolower(trim(sanitize_text_field($value)));
-        if (
-            $value === 'normal'
-            || ($value !== '' && preg_match('/^\d+(\.\d+)?(px|em|rem|%)?$/i', $value))
-        ) {
-            return $value;
+        $raw = trim(sanitize_text_field($value));
+        if ($raw === '') {
+            return $fallback;
+        }
+
+        $key = sanitize_key($raw);
+        if ($key === 'normal') {
+            return 'normal';
+        }
+
+        if (preg_match('/^\d+(\.\d+)?(px|em|rem|%)?$/i', $raw)) {
+            return strtolower($raw);
         }
 
         return $fallback;
@@ -151,6 +160,26 @@ class Wp
     public static function escapeTableName(string $table): string
     {
         return esc_sql($table);
+    }
+
+    /**
+     * Comma-separated list of prepared integers for SQL IN (...).
+     *
+     * Each ID is bound via $wpdb->prepare('%d', ...) so callers can concatenate the
+     * result without putting a dynamic placeholder string into a later prepare().
+     *
+     * @param array<int, int|string> $ids
+     */
+    public static function prepareInIntegers(array $ids): string
+    {
+        global $wpdb;
+
+        $parts = [];
+        foreach ($ids as $id) {
+            $parts[] = $wpdb->prepare('%d', absint($id));
+        }
+
+        return $parts === [] ? '0' : implode(',', $parts);
     }
 
     /**
@@ -293,7 +322,10 @@ class Wp
     }
 
     /**
-     * Allowed HTML tags for storefront review forms (wp_kses context).
+     * Explicit allow-list for storefront / invite review form markup (wp_kses).
+     *
+     * Intentionally NOT based on wp_kses_allowed_html( 'post' ) — only the tags
+     * and attributes the plugin forms actually emit are permitted.
      *
      * @return array<string, array<string, bool>>
      */
@@ -301,33 +333,43 @@ class Wp
     {
         return [
             'div' => [
-                'class'  => true,
-                'hidden' => true,
+                'class'      => true,
+                'hidden'     => true,
+                'id'         => true,
+                'role'       => true,
+                'aria-label' => true,
+                'aria-live'  => true,
+            ],
+            'p' => [
+                'class' => true,
             ],
             'form' => [
-                'class'    => true,
-                'method'   => true,
-                'action'   => true,
-                'enctype'  => true,
+                'class'   => true,
+                'method'  => true,
+                'action'  => true,
+                'enctype' => true,
             ],
             'input' => [
                 'type'                 => true,
                 'name'                 => true,
                 'value'                => true,
                 'class'                => true,
-                'placeholder'          => true,
+                'id'                   => true,
                 'required'             => true,
+                'placeholder'          => true,
+                'readonly'             => true,
                 'multiple'             => true,
                 'accept'               => true,
-                'id'                   => true,
-                'readonly'             => true,
+                'style'                => true,
+                'aria-label'           => true,
+                'aria-describedby'     => true,
                 'data-rating-required' => true,
             ],
             'button' => [
                 'type'        => true,
                 'class'       => true,
-                'data-value'  => true,
                 'aria-label'  => true,
+                'data-value'  => true,
                 'data-rating' => true,
             ],
             'h4' => [
@@ -346,6 +388,7 @@ class Wp
                 'rows'        => true,
                 'required'    => true,
                 'placeholder' => true,
+                'aria-label'  => true,
             ],
         ];
     }
@@ -427,7 +470,7 @@ class Wp
             'widget_subtitle'        => self::postText('widget_subtitle'),
             'primary_color'          => self::postText('primary_color', '#F59E0B'),
             'accent_color'           => self::postText('accent_color', '#FDB022'),
-            'font_family'            => self::postText('font_family', 'system'),
+            'font_family'            => self::sanitizeFontKey(self::postText('font_family', 'system')),
             'card_radius'            => self::postInt('card_radius', 12),
             'card_gap'               => self::postInt('card_gap', 24),
             'border_color'           => self::postText('border_color', '#EAECF0'),
@@ -471,8 +514,29 @@ class Wp
             'show_reviewer_location' => self::postBoolean('show_reviewer_location', false),
         ];
 
+        $data['widget_layout'] = sanitize_key((string) $data['widget_layout']);
         if (! in_array($data['widget_layout'], ['carousel', 'grid', 'list'], true)) {
             $data['widget_layout'] = 'carousel';
+        }
+
+        $data['image_style'] = sanitize_key((string) $data['image_style']);
+        if (! in_array($data['image_style'], ['rounded', 'circle', 'square'], true)) {
+            $data['image_style'] = 'rounded';
+        }
+
+        $data['widget_theme'] = sanitize_key((string) $data['widget_theme']);
+        if (! in_array($data['widget_theme'], ['minimal', 'standard', 'bold'], true)) {
+            $data['widget_theme'] = 'standard';
+        }
+
+        $data['reviewer_name_format'] = sanitize_key((string) $data['reviewer_name_format']);
+        if (! in_array($data['reviewer_name_format'], ['full', 'first', 'initials'], true)) {
+            $data['reviewer_name_format'] = 'full';
+        }
+
+        $data['default_sorting'] = sanitize_key((string) $data['default_sorting']);
+        if (! in_array($data['default_sorting'], ['newest', 'oldest', 'highest', 'lowest'], true)) {
+            $data['default_sorting'] = 'newest';
         }
 
         // Sanitize colors with core sanitize_hex_color() before storage / CSS builders.
@@ -676,7 +740,7 @@ class Wp
             $shell_shadow = '0 2px 16px rgba(0,0,0,0.05)';
         }
 
-        // Allowlisted stacks only — sanitizeFontKey() + FONT_STACKS (see fontStackCss()).
+        // Allowlisted stacks only (FONT_STACKS via fontStackCss) — safe for CSS variables.
         $font = self::fontStackCss((string) ($style['font_family'] ?? 'system'));
 
         $selector = '.hyoka-root.hyoka-widget-styled[data-hyoka-widget="' . $widget_id . '"]';
@@ -1107,9 +1171,13 @@ class Wp
                 } elseif (is_int($value) || is_float($value)) {
                     $item[$k] = $value;
                 } elseif (is_string($value)) {
-                    $item[$k] = ($k === 'url')
-                        ? esc_url_raw(wp_unslash($value))
-                        : sanitize_text_field(wp_unslash($value));
+                    if ($k === 'url') {
+                        $item[$k] = esc_url_raw(wp_unslash($value));
+                    } elseif ($k === 'type' || $k === 'id') {
+                        $item[$k] = sanitize_key(wp_unslash($value));
+                    } else {
+                        $item[$k] = sanitize_text_field(wp_unslash($value));
+                    }
                 }
             }
             $out[] = $item;

@@ -286,7 +286,7 @@ The plugin provides flexible email automation, customizable templates, quality c
 3. Upload the ZIP file.
 4. Click **Install Now**.
 5. Activate the plugin.
-6. Open **Hyoka** from the WordPress admin menu to configure reviews, email automation, widgets, and imports.
+6. Open **WooCommerce → Hyoka** in the WordPress admin to configure reviews, email automation, widgets, and imports.
 
 == Source Code ==
 

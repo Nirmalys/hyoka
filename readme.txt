@@ -312,22 +312,22 @@ app/                        # PHP plugin source
 Woocommerce/                # WooCommerce integrations
 Widgets/                    # Storefront widget templates
 assets/                     # Shared CSS / JS assets
-languages/                  # Translation template
-hyoka.php
+languages/                  # Translation template (hyoka-product-reviews.pot)
+hyoka-product-reviews.php   # Main plugin bootstrap
 composer.json
 
 = Packaging for WordPress.org =
 
 The WordPress.org plugin slug and text domain are both `hyoka-product-reviews`.
+The Plugin Name (and this readme title) remain **Hyoka** for branding; only the slug/text domain must match the directory name.
 
-When building the submission ZIP, the archive root folder must be named `hyoka-product-reviews` (not `hyoka`). Plugin Check derives the expected text domain from that folder name.
+When building the submission ZIP, the archive root folder must be named `hyoka-product-reviews`. Plugin Check derives the expected text domain from that folder name.
 
-Example:
+Example (from `wp-content/plugins`, with this plugin already in a `hyoka-product-reviews` folder):
 
 cd wp-content/plugins
-mv hyoka hyoka-product-reviews
 zip -r hyoka-product-reviews.zip hyoka-product-reviews \
-  -x "*/node_modules/*" -x "*/.git/*"
+  -x "*/node_modules/*" -x "*/.git/*" -x "*/vendor/*"
 
 = Requirements =
 

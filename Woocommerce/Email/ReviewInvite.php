@@ -121,7 +121,7 @@ class ReviewInvite
             ? '<p class="hyoka-invite-product-link"><a href="' . esc_url($permalink) . '">' . esc_html($title) . '</a></p>'
             : '<p class="hyoka-invite-product-link"><strong>' . esc_html($title) . '</strong></p>';
 
-        header('Content-Type: text/html; charset=' . get_option('blog_charset'));
+        header('Content-Type: text/html; charset=' . esc_attr((string) get_bloginfo('charset')));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
         echo '<title>' . esc_html($form_title) . '</title>';
         wp_print_styles(Assets::HANDLE_INVITE_EMAIL);
@@ -166,7 +166,7 @@ class ReviewInvite
     {
         nocache_headers();
         status_header(404);
-        header('Content-Type: text/html; charset=' . get_option('blog_charset'));
+        header('Content-Type: text/html; charset=' . esc_attr((string) get_bloginfo('charset')));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
         $font = Wp::fontStackCss('system');
         echo '<title>' . esc_html__('Review link', 'hyoka-product-reviews') . '</title></head><body style="font-family:' . esc_attr($font) . ';padding:40px;">';

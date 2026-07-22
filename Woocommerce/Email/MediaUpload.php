@@ -277,7 +277,7 @@ class MediaUpload
             $title
         );
 
-        header('Content-Type: text/html; charset=' . get_option('blog_charset'));
+        header('Content-Type: text/html; charset=' . esc_attr((string) get_bloginfo('charset')));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
         echo '<title>' . esc_html($heading) . '</title>';
         wp_print_styles(Assets::HANDLE_INVITE_EMAIL);
@@ -320,7 +320,7 @@ class MediaUpload
 
     private static function renderPlainMessage(string $title, string $message): void
     {
-        header('Content-Type: text/html; charset=' . get_option('blog_charset'));
+        header('Content-Type: text/html; charset=' . esc_attr((string) get_bloginfo('charset')));
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
         $font = Wp::fontStackCss('system');
         echo '<title>' . esc_html($title) . '</title></head><body style="font-family:' . esc_attr($font) . ';padding:40px;">';

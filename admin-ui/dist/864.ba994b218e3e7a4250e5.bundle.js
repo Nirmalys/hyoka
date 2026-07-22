@@ -7,7 +7,7 @@
  * or disable the default devtool with "devtool: false".
  * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
  */
-(globalThis["webpackChunkhyoka"] = globalThis["webpackChunkhyoka"] || []).push([[195],{
+(globalThis["webpackChunkhyoka"] = globalThis["webpackChunkhyoka"] || []).push([[864],{
 
 /***/ "./src/components/ui/pages/Widgets/components/CardCarouselWidgetPreview.js"
 /*!*********************************************************************************!*\

@@ -125,7 +125,8 @@ class UserReply
     {
         $page     = max(1, absint($args['page'] ?? 1));
         $per_page = max(1, absint($args['per_page'] ?? 10));
-        $search   = strtolower(trim((string) ($args['search'] ?? '')));
+        $search = sanitize_text_field((string) ($args['search'] ?? ''));
+        $search = strtolower(trim($search));
 
         $parents = [];
         foreach ($this->getReviewsWithUserReplies() as $row) {

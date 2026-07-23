@@ -296,9 +296,9 @@ This plugin complies with WordPress.org Plugin Guideline 4 (Code must be mostly 
 
 Hyoka is a WooCommerce extension that enables store owners to collect, moderate, and showcase product reviews, photo and video UGC, store testimonials, review request emails, and review widgets.
 
-This repository contains the complete human-readable source code used to generate the JavaScript and CSS assets distributed with the WordPress plugin.
+This plugin package contains the complete human-readable source code used to generate the JavaScript and CSS assets distributed with the WordPress plugin.
 
-= Repository Structure =
+= Plugin Structure =
 
 admin-ui/
 ├── src/                    # React source code
@@ -327,7 +327,7 @@ Example (from `wp-content/plugins`, with this plugin already in a `hyoka-product
 
 cd wp-content/plugins
 zip -r hyoka-product-reviews.zip hyoka-product-reviews \
-  -x "*/node_modules/*" -x "*/.git/*" -x "*/vendor/*"
+  -x "*/node_modules/*" -x "*/vendor/*"
 
 = Requirements =
 
@@ -339,11 +339,7 @@ zip -r hyoka-product-reviews.zip hyoka-product-reviews \
 
 = Installation =
 
-Clone the repository:
-
-git clone https://github.com/Nirmalys/hyoka.git
-
-Install frontend dependencies:
+From the plugin root, install frontend dependencies:
 
 cd admin-ui
 npm install
@@ -431,7 +427,7 @@ No. Hyoka manages reviews, emails, and display widgets separately without alteri
 
 = Where is the human-readable source for the admin JavaScript and CSS? =
 
-See the Source Code section of this readme. The public repository at https://github.com/Nirmalys/hyoka contains the complete human-readable source used to build the generated assets under `admin-ui/dist/`.
+See the Source Code section of this readme. The plugin package includes the complete human-readable source used to build the generated assets under `admin-ui/dist/`.
 
 == Screenshots ==
 

@@ -6,7 +6,6 @@ const getAjaxUrl = () => {
         return ajaxUrl;
     }
 
-    console.error("Hyoka: hyokaData.ajaxUrl is missing.");
     return "";
 };
 
@@ -38,10 +37,6 @@ axiosClient.interceptors.request.use(
         config.baseURL = getAjaxUrl();
 
         const nonce = window?.hyokaData?.nonce || '';
-
-        if (!nonce) {
-            console.warn('Hyoka: Security nonce is missing');
-        }
 
         const addNonce = (data) => {
             if (!data) return { _ajax_nonce: nonce };
@@ -83,15 +78,6 @@ axiosClient.interceptors.response.use(
     (response) => {
         return response;
     },
-    (error) => {
-        console.error('AJAX Error:', {
-            url: error.config?.baseURL,
-            action: error.config?.data?.get ? error.config.data.get('action') : error.config?.data?.action,
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            message: error.message
-        });
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 export default axiosClient;

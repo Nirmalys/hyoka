@@ -11,7 +11,6 @@ const initReactApp = async () => {
   const container = document.getElementById("HYOKA-root");
 
   if (!container) {
-    console.error("React root container not found!");
     return;
   }
 
@@ -21,12 +20,8 @@ const initReactApp = async () => {
     const { default: App } = await import(/* webpackChunkName: "app" */ "./App");
     const root = createRoot(container);
     root.render(<App />);
-  } catch (e) {
-    console.error("Hyoka: React initialization failed:", {
-      message: e.message,
-      stack: e.stack,
-      componentStack: e.componentStack,
-    });
+  } catch {
+    // Initialization failed; leave the root empty.
   }
 };
 

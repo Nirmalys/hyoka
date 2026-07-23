@@ -18,12 +18,8 @@ export function resolveApiError(err, fallbackMessage) {
   };
 }
 
-export function logApiError(err, context) {
-  if (context) {
-    console.error(context, err);
-    return;
-  }
-  console.error(err);
+export function logApiError() {
+  // Intentionally no-op (no console output in production).
 }
 
 export function reportCaughtError(err, fallbackMessage, setError) {

@@ -377,7 +377,7 @@
                         try {
                             data = JSON.parse(response);
                         } catch (e) {
-                            console.error('Hyoka: Failed to parse upload response', e);
+                            // Invalid JSON; keep original response.
                         }
                     }
 
@@ -1193,7 +1193,6 @@
         isVideo = isVideo || false;
         var $carousel = $('#' + id);
         if (!$carousel.length) {
-            console.warn('Hyoka: ' + id + ' not found');
             return;
         }
 
@@ -1407,10 +1406,7 @@
             relocateFooterWidgetStack();
             hyokaData.active_footer_widgets = footerActive;
             return true;
-        }).catch(function(err) {
-            if (window.console && console.warn) {
-                console.warn('Hyoka: footer widget load failed', err);
-            }
+        }).catch(function() {
             return false;
         });
     }
@@ -1470,10 +1466,7 @@
 
             hyokaData.active_widgets = active;
             return changed;
-        }).catch(function(err) {
-            if (window.console && console.warn) {
-                console.warn('Hyoka: widget refresh failed', err);
-            }
+        }).catch(function() {
             return false;
         });
     }
